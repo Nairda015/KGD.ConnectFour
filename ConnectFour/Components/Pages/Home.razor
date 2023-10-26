@@ -1,0 +1,22 @@
+﻿@page "/"
+
+<div class="grid grid-cols-7 gap-1">
+    @foreach (var i in Enumerable.Range(0, 6))
+    {
+        @foreach (var j in Enumerable.Range(0, 7))
+        {
+            <div 
+                id="cell-@i-@j"
+                class="aspect-square p-1 border-2 rounded text-center hover:bg-sky-700"
+                hx-post="move"
+                hx-swap="outerHTML"
+                hx-vals='{"gameId": @_gameId, "columnNumber": @j}'
+            >@i@j</div>
+        }
+    }
+</div>
+
+@code
+{
+    private readonly int _gameId = Random.Shared.Next();
+}
