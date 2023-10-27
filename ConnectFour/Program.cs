@@ -10,6 +10,12 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<BackgroundPublisher>();
 builder.Services.AddSingleton<WsHubTest>();
+builder.Services.AddSingleton<GameHub>();
+builder.Services.AddSingleton<LobbyHub>();
+
+builder.Services.AddSingleton<LobbyQueue>();
+
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddSingleton<InMemoryGamesState>();
 builder.Services.RegisterHandlers<Program>();
@@ -35,8 +41,9 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-app.MapHub<BoardHub>("/board-hub");
+app.MapHub<GameHub>("/game-hub");
 app.MapHub<WsHubTest>("/ws-hub");
+app.MapHub<LobbyHub>("/lobby-hub");
 
 
 app.MapEndpoints<Program>();

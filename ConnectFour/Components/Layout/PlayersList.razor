@@ -1,0 +1,13 @@
+@using ConnectFour.Hubs
+
+
+@foreach (var (conn, gameId) in Players.GetAll().Take(10))
+{
+    <PlayerRow ConnectionId="@conn" GameId="@gameId"/>
+}
+
+@code {
+
+    [Inject]
+    public required LobbyQueue Players { get; set; }
+}

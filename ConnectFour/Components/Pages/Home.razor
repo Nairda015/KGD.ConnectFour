@@ -1,6 +1,7 @@
 ﻿@page "/"
+@using ConnectFour.Persistance
 
-<div class="grid grid-cols-7 gap-1" hx-sse="connect:/board-hub">
+<div class="grid grid-cols-7 gap-1" hx-ext="signalr" signalr-connect="/game-hub">
     @foreach (var i in Enumerable.Range(0, 6))
     {
         @foreach (var j in Enumerable.Range(0, 7))
@@ -14,10 +15,9 @@
             >@i@j</div>
         }
     }
-    @* <div hx-sse="swap:hello-world" class="p-1 bg-red-600 min-h-10 min-w-[40px]">Hello</div> *@
 </div>
 
 @code
 {
-    private readonly int _gameId = Random.Shared.Next();
+    private readonly GameId _gameId = GameId.Create();
 }

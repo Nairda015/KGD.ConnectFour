@@ -1,17 +1,25 @@
 using System.Collections.Concurrent;
+using ConnectFour.Domain;
 
 namespace ConnectFour.Persistance;
 
 public class InMemoryGamesState
 {
-    private readonly ConcurrentDictionary<int, int> _gamesState = new();
+    private readonly ConcurrentDictionary<GameId, GameLog> _gamesState = new();
     
-    public int GetState(int gameId) => _gamesState.TryGetValue(gameId, out var state) ? state : 0;
+    public GameLog GetState(GameId gameId) => _gamesState[gameId];
+    public void UpdateState(GameLog gameLog) => _gamesState[gameLog.GameId] = gameLog;
+    public bool NewGame(GameLog log) => _gamesState.TryAdd(log.GameId, log);
+}
 
-    public void UpdateState(int gameId)
-    {
-        var state = GetState(gameId);
-        state++;
-        _gamesState[gameId] = state;
-    }
+public readonly record struct GameId(string Value)
+{
+    public static GameId Create() => new(Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..^2]);
+    public string Value { get; } = Value;
+}
+
+public readonly record struct UserId(string Value)
+{
+    public static UserId Create() => new(Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..^2]);
+    public string Value { get; } = Value;
 }
