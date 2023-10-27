@@ -1,0 +1,24 @@
+﻿@page "/ws"
+
+<PageTitle>Ws</PageTitle>
+
+<div hx-ext="signalr" signalr-connect="/ws-hub" class="p-1 border-2 rounded text-center">
+    <p class="text-xl">Manual</p>
+    <form hx-post="/new-message" hx-swap="none">
+        <input type="text" name="message" class="border-2 rounded"/>
+        <button type="submit" class="border-2 rounded">Send Event</button>
+    </form>
+    <div signalr-subscribe="new-message" class="border-2 rounded" >
+        <p> Initial Message </p>
+    </div>
+</div>
+
+<hr/>
+
+<div hx-ext="signalr" signalr-connect="/ws-hub" class="p-1 border-2 rounded text-center">
+    <p class="text-xl">Auto</p>
+    <div role="status">Latest message: </div>
+    <div signalr-subscribe="new-hb-message"> Initial Message </div>
+    <div signalr-subscribe="new-hb-message2"> Initial Message </div>
+</div>
+

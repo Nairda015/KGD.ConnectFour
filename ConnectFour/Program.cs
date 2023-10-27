@@ -1,4 +1,5 @@
 using ConnectFour.Components;
+using ConnectFour.Hubs;
 using ConnectFour.Persistance;
 using MiWrap;
 
@@ -6,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<BackgroundPublisher>();
+builder.Services.AddSingleton<WsHubTest>();
 
 builder.Services.AddSingleton<InMemoryGamesState>();
 builder.Services.RegisterHandlers<Program>();
@@ -28,29 +32,15 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-
-// var antiforgery = app.Services.GetRequiredService<IAntiforgery>();
-//
-// app.Use((context, next) =>
-// {
-//     var requestPath = context.Request.Path.Value;
-//
-//     if (string.Equals(requestPath, "/", StringComparison.OrdinalIgnoreCase)
-//         || string.Equals(requestPath, "/index.html", StringComparison.OrdinalIgnoreCase))
-//     {
-//         var tokenSet = antiforgery.GetAndStoreTokens(context);
-//         context.Response.Cookies.Append("XSRF-TOKEN", tokenSet.RequestToken!,
-//             new CookieOptions { HttpOnly = false });
-//     }
-//
-//     return next(context);
-// });
-
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapHub<BoardHub>("/board-hub");
+app.MapHub<WsHubTest>("/ws-hub");
+
 
 app.MapEndpoints<Program>();
+
 
 app.UseSwagger();
 app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Upskill"); });

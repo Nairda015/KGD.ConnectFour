@@ -21,8 +21,6 @@ internal class MakeMoveHandler(InMemoryGamesState gamesState) : IHttpCommandHand
 {
     public async Task<IResult> HandleAsync(MakeMove command, CancellationToken cancellationToken = default)
     {
-        await Task.Delay(10, cancellationToken);
-        Console.WriteLine(command);
         var state = gamesState.GetState(command.GameId);
         gamesState.UpdateState(command.GameId);
         return new RazorComponentResult(typeof(Disc), new { Colour = state % 2 == 0 ? "red" : "blue" });
