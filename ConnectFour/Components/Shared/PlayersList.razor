@@ -1,4 +1,4 @@
-@using ConnectFour.Hubs
+@using ConnectFour.Persistence
 
 
 @foreach (var (conn, gameId) in Players.GetAll().Take(10))
@@ -9,5 +9,5 @@
 @code {
 
     [Inject]
-    public required LobbyQueue Players { get; set; }
+    public required Lobby Players { get; set; }
 }

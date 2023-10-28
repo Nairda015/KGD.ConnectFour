@@ -3,21 +3,21 @@ namespace ConnectFour.Domain;
 public class Game
 {
     private readonly Board _board;
-    private Player _currentPlayer;
+    private PlayerColor _currentPlayerColor;
 
     public Game(GameLog gameLog)
     {
         _board = Board.LoadBoardFromLog(gameLog);
-        _currentPlayer = gameLog.CurrentPlayer;
+        _currentPlayerColor = gameLog.CurrentPlayerColor;
     }
     
     public MoveResult MakeMove(int column)
     {
-        if (!_board.DropToken(column, _currentPlayer, out var droppedRow)) return MoveResult.ColumnFull;
+        if (!_board.DropToken(column, _currentPlayerColor, out var droppedRow)) return MoveResult.ColumnFull;
 
         if (CheckWin(droppedRow, column)) return MoveResult.Win;
 
-        _currentPlayer = _currentPlayer is Player.Red ? Player.Yellow : Player.Red;
+        _currentPlayerColor = _currentPlayerColor is PlayerColor.Red ? PlayerColor.Yellow : PlayerColor.Red;
         return MoveResult.Ok;
     }
 
@@ -37,7 +37,7 @@ public class Game
 
             if (!IsInside(newRow, newCol)) continue;
 
-            if (_board.Grid[newRow, newCol] == _currentPlayer)
+            if (_board.Grid[newRow, newCol] == _currentPlayerColor)
             {
                 count++;
                 if (count is 4) return true;
@@ -54,7 +54,7 @@ public class Game
     
     public class Board
     {
-        public readonly Player[,] Grid = new Player[Rows, Columns];
+        public readonly PlayerColor[,] Grid = new PlayerColor[Rows, Columns];
         public const int Rows = 6;
         public const int Columns = 7;
         
@@ -64,11 +64,11 @@ public class Game
         {
             var board = new Board();
             
-            var currentPlayer = Player.Red;
+            var currentPlayer = PlayerColor.Red;
             foreach (var column in gameLog.Log)
             {
                 board.DropToken(column, currentPlayer, out _);
-                currentPlayer = currentPlayer is Player.Red ? Player.Yellow : Player.Red;
+                currentPlayer = currentPlayer is PlayerColor.Red ? PlayerColor.Yellow : PlayerColor.Red;
             }
 
             return board;
@@ -78,17 +78,17 @@ public class Game
         /// Drop a token in the specified column
         /// </summary>
         /// <param name="column"></param>
-        /// <param name="currentPlayer"></param>
+        /// <param name="currentPlayerColor"></param>
         /// <param name="droppedRow"></param>
         /// <returns>true if successfully placed false if row is full</returns>
-        public bool DropToken(int column, Player currentPlayer, out int droppedRow)
+        public bool DropToken(int column, PlayerColor currentPlayerColor, out int droppedRow)
         {
             droppedRow = -1;
             for (var row = Rows - 1; row >= 0; row--)
             {
-                if (Grid[row, column] is Player.Empty)
+                if (Grid[row, column] is PlayerColor.Empty)
                 {
-                    Grid[row, column] = currentPlayer;
+                    Grid[row, column] = currentPlayerColor;
                     droppedRow = row;
                     return true;
                 }

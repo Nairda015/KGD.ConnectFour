@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +21,8 @@
 
 
     <ItemGroup>
+        <PackageReference Include="Bogus" Version="34.0.2" />
+        
         <PackageReference Include="MiWrap" Version="1.0.0"/>
 
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>

@@ -1,4 +1,4 @@
-﻿@using ConnectFour.Persistance
+﻿@using ConnectFour.Persistence
 @inherits LayoutComponentBase
 
 <div class="page">
@@ -16,10 +16,10 @@
 
         <div id="actions"
              class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto"
-             hx-vals='{"UserId": "@UserId.Create().Value"}'
-             hx-post="/new-game"
-             hx-swap="none">
-            <div class="p-1 w-full border-2 rounded text-center">
+             hx-ext="signalr" signalr-connect="/game-hub">
+            <div class="p-1 w-full border-2 rounded text-center"
+                 signalr-send="newGame"
+                 hx-vals='{"UserId": "@PlayerId.Create().Value"}'>
                 New Game
             </div>
         </div>
@@ -31,7 +31,7 @@
                     <th>Game Id</th>
                 </tr>
                 </thead>
-                <tbody hx-get="/refresh-lobby" hx-trigger="sse:lobby-update">
+                <tbody hx-get="/refresh-lobby" hx-trigger="load, every 5s, sse:lobby-update throttle:500ms">
                     
                 </tbody>
             </table>
@@ -40,7 +40,6 @@
 </div>
 
 @* TODO *@
-@* hx-trigger="every 5s" *@
 @* <div id="blazor-error-ui"> *@
 @*     An unhandled error has occurred. *@
 @*     <a href="" class="reload">Reload</a> *@

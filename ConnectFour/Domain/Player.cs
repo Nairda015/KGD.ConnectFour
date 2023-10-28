@@ -1,8 +1,5 @@
+using ConnectFour.Persistence;
+
 namespace ConnectFour.Domain;
 
-public enum Player
-{
-    Empty = 0,
-    Red = 1, // first player
-    Yellow = 2, // second player
-}
+public record Player(PlayerId PlayerId, string Connection);

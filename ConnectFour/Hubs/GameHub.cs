@@ -1,25 +1,58 @@
-using ConnectFour.Persistance;
+using System.Collections.Concurrent;
+using ConnectFour.Domain;
+using ConnectFour.Persistence;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ConnectFour.Hubs;
 
-public class GameHub(IHubContext<GameHub> hubContext) : Hub
+public record NewGameMessage(string UserId);
+
+public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, LobbyHub lobby) : Hub
 {
-    public async Task AddToGroup(GameId gameId, CancellationToken cancellationToken)
+    private static readonly ConcurrentQueue<Player> UsersQueue = new();
+
+    public async Task NewGame(NewGameMessage message)
     {
-        var connectionId = Context.ConnectionId;
-        await hubContext.Groups.AddToGroupAsync(connectionId, gameId.Value, cancellationToken);
+        var conn = Context.ConnectionId;
+        var userId = new PlayerId(message.UserId);
+
+        if (UsersQueue.IsEmpty)
+        {
+            UsersQueue.Enqueue(new Player(userId, conn));
+            return;
+        }
+
+        //TODO: is this good idea?
+        if (!UsersQueue.TryDequeue(out var secondUser)) return;
+
+        var log = new GameLog
+        {
+            GameId = GameId.Create(),
+            FirstPlayer = new Player(userId, conn),
+            SecondPlayer = secondUser,
+        };
+
+        await StartGame(log, CancellationToken.None);
     }
 
-    public async Task SendMessage(string message)
+    private async Task StartGame(GameLog log, CancellationToken ct)
     {
-        await hubContext.Clients.All.SendAsync("new-message", $"""<p> {message} </p>""");
+        state.NewGame(log);
+        lobby.UpdateLobbyAfterGameStarted(log);
+        
+        await hubContext.Groups.AddToGroupAsync(log.FirstPlayer.Connection, log.GameId.Value, ct);
+        await hubContext.Groups.AddToGroupAsync(log.SecondPlayer.Connection, log.GameId.Value, ct);
+
+        await hubContext.Clients
+            .Group(log.GameId.Value)
+            .SendAsync("game-started", "game-started", ct);
     }
 
-    public async Task SendCompletedGameMessage(GameId gameId, string playerId)
+    public async Task SendCompletedGameMessage(GameId gameId, PlayerId playerId)
     {
+        lobby.UpdateLobbyAfterGameEnded(gameId);
         await hubContext.Clients
             .Group(gameId.Value)
-            .SendAsync($"game-completed-{gameId}", $"Player {playerId} won!</p>");
+            .SendAsync($"game-completed-{gameId.Value}", $"Player {playerId.Value} won!</p>");
     }
 }

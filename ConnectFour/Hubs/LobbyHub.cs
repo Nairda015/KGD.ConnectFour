@@ -1,42 +1,39 @@
-using System.Collections.Concurrent;
-using ConnectFour.Components.Shared;
-using ConnectFour.Persistance;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Http.HttpResults;
+using ConnectFour.Domain;
+using ConnectFour.Persistence;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ConnectFour.Hubs;
 
-public class LobbyHub(LobbyQueue lobbyQueue) : Hub
+public class LobbyHub(Lobby lobby) : Hub
 {
     public override Task OnConnectedAsync()
     {
-        lobbyQueue.Add(Context.ConnectionId, null);
-        Clients.All.SendAsync("lobby-update", $"Player added {Context.ConnectionId}");
+        //TODO get player id maybe from headers?
+        var playerId = new PlayerId(Context.ConnectionId);
+        lobby.AddNewPlayer(playerId);
+        Clients.All.SendAsync("lobby-update", $"Player added {playerId.ToString()}");
         return base.OnConnectedAsync();
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        lobbyQueue.Remove(Context.ConnectionId);
-        Clients.All.SendAsync("lobby-update", $"Player removed {Context.ConnectionId}");
+        var playerId = new PlayerId(Context.ConnectionId);
+        lobby.Remove(playerId);
+        Clients.All.SendAsync("lobby-update", $"Player removed {playerId.ToString()}");
         return base.OnDisconnectedAsync(exception);
     }
 
-    public void UpdateLobbyAfterGameStarted(GameId gameId)
+    public void UpdateLobbyAfterGameStarted(GameLog log)
     {
-        Clients.All.SendAsync("lobby-update", $"Player {Context.ConnectionId} joined {gameId.Value}");
-        lobbyQueue.Update(Context.ConnectionId, gameId);
+        lobby.AddNewGame(log);
+        //TODO: fix this after response on github
+        Clients.All.SendAsync("lobby-update", $"Game with Id {log.GameId} started");
     }
-}
-
-public class LobbyQueue
-{
-    private static readonly ConcurrentDictionary<string, GameId?> UsersList = new();
-
-    public void Add(string key, GameId? value) => UsersList.TryAdd(key, value);
-    public void Update(string key, GameId? value) => UsersList.TryUpdate(key, value, UsersList[key]);
-    public void Remove(string key) => UsersList.TryRemove(key, out _);
-    public IEnumerable<(string, GameId?)> GetAll() => UsersList.Select(x => (x.Key, x.Value));
     
+    public void UpdateLobbyAfterGameEnded(GameId gameId)
+    {
+        lobby.GameFinished(gameId);
+        //TODO: fix this after response on github
+        Clients.All.SendAsync("lobby-update", $"Game with Id {gameId.ToString()} finished");
+    }
 }

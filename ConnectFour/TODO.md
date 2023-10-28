@@ -1,0 +1,1 @@
+- [ ] handle player id instead of lobby connection in connect request

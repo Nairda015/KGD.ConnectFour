@@ -1,12 +1,12 @@
 using ConnectFour.Domain;
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
-using ConnectFour.Persistance;
+using ConnectFour.Persistence;
 using MiWrap;
 
 namespace ConnectFour.Features;
 
-internal record MakeMove(GameId GameId, string PlayerId, int ChosenColumn) : IHttpCommand;
+internal record MakeMove(PlayerId PlayerId, int ChosenColumn) : IHttpCommand;
 
 public class SyntaxTestEndpoint : IEndpoint
 {
@@ -17,12 +17,13 @@ public class SyntaxTestEndpoint : IEndpoint
             .DisableAntiforgery();
 }
 
-internal class MakeMoveHandler(InMemoryGamesState gamesState, GameHub hub) : IHttpCommandHandler<MakeMove>
+internal class MakeMoveHandler(InMemoryGamesState gamesState, GameHub hub, IHttpContextAccessor context) : IHttpCommandHandler<MakeMove>
 {
     public async Task<IResult> HandleAsync(MakeMove command, CancellationToken cancellationToken = default)
     {
-        var (gameId, playerId, chosenColumn) = command;
-
+        var (playerId, chosenColumn) = command;
+        var path = context.HttpContext?.Request.Path;
+        var gameId = new GameId(path!);
         var gameLog = gamesState.GetState(gameId);
 
         if (gameLog.IsComplete) return Results.BadRequest("Game is already completed");
