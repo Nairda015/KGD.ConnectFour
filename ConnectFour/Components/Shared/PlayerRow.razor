@@ -1,0 +1,26 @@
+@using ConnectFour.Persistence
+@using System.Collections.Concurrent
+
+<tr id="@ConnectionId"
+    signalr-subscribe="lobby-player-@ConnectionId"
+    hx-swap="outerHTML">
+    <td class="border-r-2">@ConnectionId</td>
+    @if (GameId is null)
+    {
+        <td>...</td>
+    }
+    else
+    {
+        <td>@GameId</td>
+    }
+</tr>
+
+@code {
+
+    [Parameter]
+    public required string ConnectionId { get; set; }
+
+    [Parameter]
+    public required GameId? GameId { get; set; }
+
+}

@@ -1,28 +1,53 @@
-﻿@inherits LayoutComponentBase
+﻿@using ConnectFour.Persistence
+@inherits LayoutComponentBase
 
-<div class="page">
+<div class="page" playerId="@_playerId.ToString()">
     <div class="flex w-full px-4 pb-2 pt-4 max-w-md mx-auto">
         <NavMenu/>
     </div>
 
     <main>
         <div id="score" class="w-full px-4 py-2 text-center max-w-md mx-auto">
-            <div class="text-2xl border-2 rounded py-2"> 1 / 3 / 6 </div>
+            <div class="text-2xl border-2 rounded py-2"> 0 / 0 / 0 </div>
         </div>
         <div id="board" class="w-full px-4 py-2 max-w-md mx-auto">
             @Body
         </div>
 
-        <div id="actions" class="flex justify-around w-full px-4 py-2 columns-2 gap-4 max-w-md mx-auto">
-            <div class="p-1 w-full border-2 rounded">
-                <img src="undo.svg" alt="undo" class="aspect-square max-h-10 mx-auto"/>
+        <div id="actions"
+             class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto"
+             hx-ext="signalr" signalr-connect="/game-hub">
+            <div class="p-1 w-full border-2 rounded text-center"
+                 signalr-send="newGame"
+                 hx-vals='{"playerId": "@_playerId.ToString()"}'> 
+                New Game
             </div>
-            <div class="p-1 w-full border-2 rounded">
-                <img src="resign.svg" alt="resign" class="aspect-square max-h-10 mx-auto"/>
-            </div>
+        </div>
+        
+        <div class="w-full px-4 py-2 max-w-md mx-auto"
+             hx-ext="signalr"
+             signalr-connect="/lobby-hub?playerId=@_playerId.ToString()">
+            <table class="w-full border-2 rounded text-center">
+                <thead>
+                <tr>
+                    <th class="border-r-2">Player Id</th>
+                    <th>Game Id</th>
+                </tr>
+                </thead>
+                <tbody hx-get="/refresh-lobby"
+                       hx-headers='js:{playerId: sessionStorage.getItem("PlayerId")}'
+                       hx-trigger="load, every 5s, sse:lobby-update throttle:500ms">
+
+                </tbody>
+            </table>
         </div>
     </main>
 </div>
+
+@code
+{
+    private readonly PlayerId _playerId = PlayerId.Create();
+}
 
 @* TODO *@
 @* <div id="blazor-error-ui"> *@

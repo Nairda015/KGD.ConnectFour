@@ -2,13 +2,6 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace ConnectFour.Hubs;
 
-public class BoardHub : Hub
-{
-    public async Task SendMessage(string message)
-    {
-        await Clients.All.SendAsync("new-message", $"""<p> {message} </p>""");
-    }
-}
 
 public class WsHubTest(IHubContext<WsHubTest> hubContext) : Hub
 {
