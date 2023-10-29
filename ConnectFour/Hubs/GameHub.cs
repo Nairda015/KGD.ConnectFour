@@ -45,6 +45,7 @@ public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, 
 
         var message = $"""
                         <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
+                        <div class="hidden" hx-get="/game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#new-game-button"></div>
                         <script>sessionStorage.setItem("GameId", "{log.GameId.ToString()}");</script>
                         """;
         await hubContext.Clients

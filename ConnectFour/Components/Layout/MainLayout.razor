@@ -1,32 +1,35 @@
 ﻿@using ConnectFour.Persistence
 @inherits LayoutComponentBase
 
-<div class="page" playerId="@_playerId.ToString()">
+<div class="page">
     <div class="flex w-full px-4 pb-2 pt-4 max-w-md mx-auto">
         <NavMenu/>
     </div>
 
     <main hx-ext="signalr" signalr-connect="/game-hub">
+
+        <div id="playerId" class="w-full px-4 py-2 text-center max-w-md mx-auto">
+            <div class="text-2xl border-2 rounded py-2"> @_playerId </div>
+        </div>
         <div id="score" class="w-full px-4 py-2 text-center max-w-md mx-auto">
             <div class="text-2xl border-2 rounded py-2"> 0 / 0 / 0 </div>
         </div>
+        
         <div id="board" class="w-full px-4 py-2 max-w-md mx-auto">
             @Body
         </div>
 
-        <div id="actions"
-             class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto">
-            <div class="p-1 w-full border-2 rounded text-center"
+        <div id="new-game-button" class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto">
+            <div  class="p-1 w-full border-2 rounded text-center"
                  signalr-send="newGame"
-                 hx-vals='{"playerId": "@_playerId.ToString()"}'> 
+                 hx-vals='{"playerId": "@_playerId.ToString()"}'>
                 New Game
             </div>
-            
-            <div id="new-game-hack" signalr-subscribe="game-started"></div>
-            
-            <div id="game-completed" signalr-subscribe="game-completed"></div>
         </div>
         
+        <div id="new-game-hack" signalr-subscribe="game-started"></div>
+        <div id="game-completed" signalr-subscribe="game-completed"></div>
+
         <div class="w-full px-4 py-2 max-w-md mx-auto"
              hx-ext="signalr"
              signalr-connect="/lobby-hub?playerId=@_playerId.ToString()">

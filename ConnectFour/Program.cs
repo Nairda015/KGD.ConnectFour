@@ -1,6 +1,8 @@
 using ConnectFour.Components;
+using ConnectFour.Components.Shared;
 using ConnectFour.Hubs;
 using ConnectFour.Persistence;
+using Microsoft.AspNetCore.Http.HttpResults;
 using MiWrap;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,8 +51,25 @@ app.MapEndpoints<Program>();
 
 app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 {
-    ctx.Response.Headers.Add("HX-Push-Url", gameId);
+    ctx.Response.Headers.Add("HX-Push-Url", $"game/{gameId}");
     return Results.Ok();
+});
+
+app.MapGet("game-buttons", () => new RazorComponentResult(typeof(InGameButtons)));
+
+app.MapGet("game/{gameId}", (HttpContext ctx, InMemoryGamesState db, GameId gameId) =>
+{
+    var gameExist = db.TryGetGameState(gameId, out var log);
+
+    if (gameExist)
+    {
+        //replace target and refresh board 
+        //if game is on going subscribe to group (how to handle dropped subscription?)
+        return Results.Ok();
+    }
+    
+    //ctx.Response.Headers.Add("HX-Push-Url", "/");
+    return Results.Redirect("/");
 });
 
 
