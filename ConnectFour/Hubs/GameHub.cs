@@ -43,16 +43,32 @@ public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, 
         await hubContext.Groups.AddToGroupAsync(log.FirstPlayer.Connection, log.GameId.Value, ct);
         await hubContext.Groups.AddToGroupAsync(log.SecondPlayer.Connection, log.GameId.Value, ct);
 
+        var message = $"""
+                        <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
+                        <script>sessionStorage.setItem("GameId", "{log.GameId.ToString()}");</script>
+                        """;
         await hubContext.Clients
             .Group(log.GameId.Value)
-            .SendAsync("game-started", "game-started", ct);
+            .SendAsync("game-started", message, ct);
     }
 
     public async Task SendCompletedGameMessage(GameId gameId, PlayerId playerId)
     {
         lobby.UpdateLobbyAfterGameEnded(gameId);
+        
+        var message = $"""<script>alert("Player {playerId.Value} won!");</script>""";
         await hubContext.Clients
             .Group(gameId.Value)
-            .SendAsync($"game-completed-{gameId.Value}", $"Player {playerId.Value} won!</p>");
+            .SendAsync("game-completed", message);
+    }
+
+    public async Task MarkMove(GameLog log, Position movePosition, CancellationToken ct)
+    {
+        var colour = log.CurrentPlayerColor.ToString().ToLower();
+        var message = $"""<div class="aspect-square bg-{colour}-600 border-2 rounded-full border-black"></div>""";
+
+        await hubContext.Clients
+            .Group(log.GameId.Value)
+            .SendAsync($"mark-move-{movePosition.Row}-{movePosition.Column}", message, ct);
     }
 }

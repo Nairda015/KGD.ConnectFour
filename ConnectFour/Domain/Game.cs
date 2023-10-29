@@ -1,5 +1,9 @@
 namespace ConnectFour.Domain;
 
+public record struct Position(int Column, int Row);
+
+public record Move(MoveResult MoveResult, Position? Position);
+
 public class Game
 {
     private readonly Board _board;
@@ -11,14 +15,14 @@ public class Game
         _currentPlayerColor = gameLog.CurrentPlayerColor;
     }
     
-    public MoveResult MakeMove(int column)
+    public Move MakeMove(int column)
     {
-        if (!_board.DropToken(column, _currentPlayerColor, out var droppedRow)) return MoveResult.ColumnFull;
+        if (!_board.DropToken(column, _currentPlayerColor, out var droppedRow)) return new Move(MoveResult.ColumnFull, null);
 
-        if (CheckWin(droppedRow, column)) return MoveResult.Win;
+        if (CheckWin(droppedRow, column)) return new Move(MoveResult.Win, new Position(column, droppedRow));
 
         _currentPlayerColor = _currentPlayerColor is PlayerColor.Red ? PlayerColor.Yellow : PlayerColor.Red;
-        return MoveResult.Ok;
+        return new Move(MoveResult.Ok, new Position(column, droppedRow));
     }
 
     private bool CheckWin(int row, int col) =>

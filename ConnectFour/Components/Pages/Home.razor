@@ -5,22 +5,15 @@
     {
         @foreach (var j in Enumerable.Range(0, 7))
         {
-            <div
-                id="cell-@i-@j"
-                class="aspect-square p-1 border-2 rounded text-center hover:bg-sky-700"
-                hx-post="move"
-                hx-swap="outerHTML"
-                hx-vals='{"columnNumber": @j}'>
+            <div signalr-subscribe="mark-move-@i-@j">
+                <div
+                    id="cell-@i-@j"
+                    class="aspect-square p-1 border-2 rounded text-center hover:bg-sky-700"
+                    hx-post="move"
+                    hx-swap="none"
+                    hx-vals='js:{playerId: sessionStorage.getItem("PlayerId"), gameId: sessionStorage.getItem("GameId"), columnNumber: @j}'>
+                </div>
             </div>
         }
     }
 </div>
-
-<script>
-document.addEventListener('htmx:afterRequest', function(evt) {
-    if (evt.detail.pathInfo.requestPath !== "playerId") return;
-    
-    let playerId = evt.detail.xhr.response;
-    sessionStorage.setItem("PlayerId", playerId)
-});
-</script>

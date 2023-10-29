@@ -47,6 +47,13 @@ app.MapHub<LobbyHub>("/lobby-hub");
 app.MapEndpoints<Program>();
 
 
+app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
+{
+    ctx.Response.Headers.Add("HX-Push-Url", gameId);
+    return Results.Ok();
+});
+
+
 app.UseSwagger();
 app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Upskill"); });
 

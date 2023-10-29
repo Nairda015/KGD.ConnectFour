@@ -6,7 +6,7 @@ using MiWrap;
 
 namespace ConnectFour.Features;
 
-internal record MakeMove(PlayerId PlayerId, int ChosenColumn) : IHttpCommand;
+internal record MakeMove(PlayerId PlayerId, GameId GameId, int ColumnNumber) : IHttpCommand;
 
 public class SyntaxTestEndpoint : IEndpoint
 {
@@ -17,28 +17,31 @@ public class SyntaxTestEndpoint : IEndpoint
             .DisableAntiforgery();
 }
 
-internal class MakeMoveHandler(InMemoryGamesState gamesState, GameHub hub, IHttpContextAccessor context) : IHttpCommandHandler<MakeMove>
+internal class MakeMoveHandler(InMemoryGamesState gamesState, GameHub hub) : IHttpCommandHandler<MakeMove>
 {
     public async Task<IResult> HandleAsync(MakeMove command, CancellationToken cancellationToken = default)
     {
-        var (playerId, chosenColumn) = command;
-        var path = context.HttpContext?.Request.Path;
-        var gameId = new GameId(path!);
+        var (playerId, gameId, chosenColumn) = command;
+        // var ctx = context.HttpContext!;
+        // var currentUrl = ctx.Request.Headers["HX-Current-URL"];
+        // var uri = new Uri(currentUrl.First()!);
+        // var gameId = new GameId(uri.Segments[1]);
         var gameLog = gamesState.GetState(gameId);
 
         if (gameLog.IsComplete) return Results.BadRequest("Game is already completed");
-        if (gameLog.CurrentPlayerId != playerId) return Results.BadRequest("It's not your turn");
+        if (gameLog.GetCurrentPlayerId != playerId) return Results.BadRequest("It's not your turn");
 
         var game = new Game(gameLog);
-        var moveResult = game.MakeMove(chosenColumn);
+        var move = game.MakeMove(chosenColumn);
 
-        if (moveResult is MoveResult.ColumnFull) return Results.BadRequest("Column is full");
+        if (move.MoveResult is MoveResult.ColumnFull) return Results.BadRequest("Column is full");
 
         gameLog.AddMove(chosenColumn);
-        if (moveResult is MoveResult.Win) gameLog.Complete();
+        if (move.MoveResult is MoveResult.Win) gameLog.Complete();
 
         gamesState.UpdateState(gameLog);
 
+        await hub.MarkMove(gameLog, move.Position!.Value, cancellationToken);
         if (gameLog.IsComplete) await hub.SendCompletedGameMessage(gameId, playerId);
 
         return Results.Accepted();
