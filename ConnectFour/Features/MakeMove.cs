@@ -22,10 +22,6 @@ internal class MakeMoveHandler(InMemoryGamesState gamesState, GameHub hub) : IHt
     public async Task<IResult> HandleAsync(MakeMove command, CancellationToken cancellationToken = default)
     {
         var (playerId, gameId, chosenColumn) = command;
-        // var ctx = context.HttpContext!;
-        // var currentUrl = ctx.Request.Headers["HX-Current-URL"];
-        // var uri = new Uri(currentUrl.First()!);
-        // var gameId = new GameId(uri.Segments[1]);
         var gameLog = gamesState.GetState(gameId);
 
         if (gameLog.IsComplete) return Results.BadRequest("Game is already completed");

@@ -40,7 +40,6 @@
                 <tbody hx-get="/refresh-lobby"
                        hx-headers='js:{playerId: sessionStorage.getItem("PlayerId")}'
                        hx-trigger="load, every 2s, sse:lobby-update throttle:500ms">
-
                 </tbody>
             </table>
         </div>
