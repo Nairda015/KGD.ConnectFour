@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace ConnectFour.Hubs;
 
-public record NewGameMessage(string UserId);
+public record NewGameMessage(string PlayerId);
 
 public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, LobbyHub lobby) : Hub
 {
@@ -14,7 +14,7 @@ public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, 
     public async Task NewGame(NewGameMessage message)
     {
         var conn = Context.ConnectionId;
-        var userId = new PlayerId(message.UserId);
+        var userId = new PlayerId(message.PlayerId);
 
         if (UsersQueue.IsEmpty)
         {

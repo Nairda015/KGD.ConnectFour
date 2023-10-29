@@ -8,8 +8,9 @@ public class LobbyHub(Lobby lobby) : Hub
 {
     public override Task OnConnectedAsync()
     {
-        //TODO get player id maybe from headers?
-        var playerId = new PlayerId(Context.ConnectionId);
+        var ctx = Context.GetHttpContext()!;
+        var queryString = ctx.Request.Query["playerId"].ToString();
+        var playerId = new PlayerId(queryString);
         lobby.AddNewPlayer(playerId);
         Clients.All.SendAsync("lobby-update", $"Player added {playerId.ToString()}");
         return base.OnConnectedAsync();
@@ -17,7 +18,9 @@ public class LobbyHub(Lobby lobby) : Hub
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        var playerId = new PlayerId(Context.ConnectionId);
+        var ctx = Context.GetHttpContext()!;
+        var queryString = ctx.Request.Query["playerId"].ToString();
+        var playerId = new PlayerId(queryString);
         lobby.Remove(playerId);
         Clients.All.SendAsync("lobby-update", $"Player removed {playerId.ToString()}");
         return base.OnDisconnectedAsync(exception);

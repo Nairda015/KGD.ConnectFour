@@ -1,7 +1,7 @@
 ﻿@using ConnectFour.Persistence
 @inherits LayoutComponentBase
 
-<div class="page">
+<div class="page" playerId="@_playerId.ToString()">
     <div class="flex w-full px-4 pb-2 pt-4 max-w-md mx-auto">
         <NavMenu/>
     </div>
@@ -19,11 +19,14 @@
              hx-ext="signalr" signalr-connect="/game-hub">
             <div class="p-1 w-full border-2 rounded text-center"
                  signalr-send="newGame"
-                 hx-vals='{"UserId": "@PlayerId.Create().Value"}'>
+                 hx-vals='{"playerId": "@_playerId.ToString()"}'> 
                 New Game
             </div>
         </div>
-        <div class="w-full px-4 py-2 max-w-md mx-auto" hx-ext="signalr" signalr-connect="/lobby-hub">
+        
+        <div class="w-full px-4 py-2 max-w-md mx-auto"
+             hx-ext="signalr"
+             signalr-connect="/lobby-hub?playerId=@_playerId.ToString()">
             <table class="w-full border-2 rounded text-center">
                 <thead>
                 <tr>
@@ -31,13 +34,20 @@
                     <th>Game Id</th>
                 </tr>
                 </thead>
-                <tbody hx-get="/refresh-lobby" hx-trigger="load, every 5s, sse:lobby-update throttle:500ms">
-                    
+                <tbody hx-get="/refresh-lobby"
+                       hx-headers='js:{playerId: sessionStorage.getItem("PlayerId")}'
+                       hx-trigger="load, every 5s, sse:lobby-update throttle:500ms">
+
                 </tbody>
             </table>
         </div>
     </main>
 </div>
+
+@code
+{
+    private readonly PlayerId _playerId = PlayerId.Create();
+}
 
 @* TODO *@
 @* <div id="blazor-error-ui"> *@
