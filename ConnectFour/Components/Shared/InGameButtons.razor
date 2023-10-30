@@ -2,7 +2,10 @@
     <div class="p-1 w-full border-2 rounded">
         <img src="undo.svg" alt="undo" class="aspect-square max-h-10 mx-auto"/>
     </div>
-    <div class="p-1 w-full border-2 rounded">
+    <div class="p-1 w-full border-2 rounded" 
+         hx-post="resign"
+         hx-swap="none"
+         hx-vals='js:{playerId: sessionStorage.getItem("PlayerId"), gameId: sessionStorage.getItem("GameId")}'>
         <img src="resign.svg" alt="resign" class="aspect-square max-h-10 mx-auto"/>
     </div>
 </div>

@@ -17,6 +17,7 @@ ui:
 - [x] add player name
 - [ ] handle dark mode
 - [ ] hover all column
+- [ ] add player score to lobby and order them by most wins!
 
 features:
 - [ ] handler game search

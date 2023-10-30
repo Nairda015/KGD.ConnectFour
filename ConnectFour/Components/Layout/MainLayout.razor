@@ -14,37 +14,39 @@
         <div id="score" class="w-full px-4 py-2 text-center max-w-md mx-auto">
             <div class="text-2xl border-2 rounded py-2"> 0 / 0 / 0 </div>
         </div>
-        
+
         <div id="board" class="w-full px-4 py-2 max-w-md mx-auto">
             @Body
         </div>
 
         <div id="new-game-button" class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto">
-            <div  class="p-1 w-full border-2 rounded text-center"
+            <div class="p-1 w-full border-2 rounded text-center"
                  signalr-send="newGame"
                  hx-vals='{"playerId": "@_playerId.ToString()"}'>
                 New Game
             </div>
         </div>
-        
+
         <div id="new-game-hack" signalr-subscribe="game-started"></div>
         <div id="game-completed" signalr-subscribe="game-completed"></div>
 
-        <div class="w-full px-4 py-2 max-w-md mx-auto"
-             hx-ext="signalr"
-             signalr-connect="/lobby-hub?playerId=@_playerId.ToString()">
-            <table class="w-full border-2 rounded text-center">
-                <thead>
-                <tr>
-                    <th class="border-r-2">Player Id</th>
-                    <th>Game Id</th>
-                </tr>
-                </thead>
-                <tbody hx-get="/refresh-lobby"
-                       hx-headers='js:{playerId: sessionStorage.getItem("PlayerId")}'
-                       hx-trigger="load, every 2s, sse:lobby-update throttle:500ms">
-                </tbody>
-            </table>
+        <div class="w-full px-4 py-2 max-w-md mx-auto">
+            <div class="w-full border-2 rounded"
+                 hx-ext="signalr"
+                 signalr-connect="/lobby-hub?playerId=@_playerId.ToString()">
+                <table class="w-full text-center">
+                    <thead>
+                    <tr>
+                        <th class="border-r-2">Player Id</th>
+                        <th>Game Id</th>
+                    </tr>
+                    </thead>
+                    <tbody hx-get="/refresh-lobby"
+                           hx-headers='js:{playerId: sessionStorage.getItem("PlayerId")}'
+                           hx-trigger="load, every 2s, sse:lobby-update throttle:500ms">
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 </div>

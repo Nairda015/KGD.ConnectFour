@@ -8,7 +8,7 @@ namespace ConnectFour.Features;
 
 internal record MakeMove(PlayerId PlayerId, GameId GameId, int ColumnNumber) : IHttpCommand;
 
-public class SyntaxTestEndpoint : IEndpoint
+public class MakeMoveEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder builder) =>
         builder.MapFormPost<MakeMove, MakeMoveHandler>("move")

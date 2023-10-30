@@ -57,7 +57,7 @@ public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, 
     {
         lobby.UpdateLobbyAfterGameEnded(gameId);
         
-        var message = $"""<script>alert("Player {playerId.Value} won!");</script>""";
+        var message = $"""<script>alert("Resignation, player {playerId.Value} won!");</script>""";
         await hubContext.Clients
             .Group(gameId.Value)
             .SendAsync("game-completed", message);
