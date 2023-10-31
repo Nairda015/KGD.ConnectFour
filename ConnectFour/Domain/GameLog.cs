@@ -1,3 +1,4 @@
+using ConnectFour.Models;
 using ConnectFour.Persistence;
 
 namespace ConnectFour.Domain;
@@ -5,12 +6,19 @@ namespace ConnectFour.Domain;
 public class GameLog
 {
     public required GameId GameId { get; init; }
-    public required Player FirstPlayer { get; init; }
-    public required Player SecondPlayer { get; init; }
-    public PlayerId GetCurrentPlayerId => Log.Count % 2 is 0 ? FirstPlayer.PlayerId : SecondPlayer.PlayerId;
+    public required PlayerConnection FirstPlayerConnection { get; init; }
+    public required PlayerConnection SecondPlayerConnection { get; init; }
+    public PlayerId GetCurrentPlayerId => Log.Count % 2 is 0 ? FirstPlayerConnection.PlayerId : SecondPlayerConnection.PlayerId;
     public bool IsComplete { get; private set; }
     public List<int> Log { get; } = new();
     public PlayerColor CurrentPlayerColor => Log.Count % 2 is 0 ? PlayerColor.Red : PlayerColor.Yellow;
     public void AddMove(int column) => Log.Add(column);
     public void Complete() => IsComplete = true;
+
+    public void Deconstruct(out GameId gameId, out PlayerId firstPlayerId, out PlayerId secondPlayerId)
+    {
+        gameId = GameId;
+        firstPlayerId = FirstPlayerConnection.PlayerId;
+        secondPlayerId = SecondPlayerConnection.PlayerId;
+    }
 }

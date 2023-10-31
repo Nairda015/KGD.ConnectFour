@@ -1,6 +1,6 @@
 using Bogus;
 
-namespace ConnectFour.Persistence;
+namespace ConnectFour.Models;
 
 public readonly record struct PlayerId(string Value) : IParsable<PlayerId>
 {

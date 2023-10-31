@@ -1,6 +1,7 @@
 using ConnectFour.Components;
 using ConnectFour.Components.Shared;
 using ConnectFour.Hubs;
+using ConnectFour.Models;
 using ConnectFour.Persistence;
 using Microsoft.AspNetCore.Http.HttpResults;
 using MiWrap;
@@ -13,12 +14,11 @@ builder.Services.AddHostedService<BackgroundPublisher>();
 builder.Services.AddSingleton<WsHubTest>();
 builder.Services.AddSingleton<GameHub>();
 builder.Services.AddSingleton<LobbyHub>();
-
-builder.Services.AddSingleton<Lobby>();
+builder.Services.AddSingleton<PlayersContext>();
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-builder.Services.AddSingleton<InMemoryGamesState>();
+builder.Services.AddSingleton<GamesContext>();
 builder.Services.RegisterHandlers<Program>();
 
 
@@ -57,7 +57,7 @@ app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 
 app.MapGet("game-buttons", () => new RazorComponentResult(typeof(InGameButtons)));
 
-app.MapGet("game/{gameId}", (HttpContext ctx, InMemoryGamesState db, GameId gameId) =>
+app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
 {
     var gameExist = db.TryGetGameState(gameId, out var log);
 

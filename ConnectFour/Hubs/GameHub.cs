@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using ConnectFour.Domain;
+using ConnectFour.Models;
 using ConnectFour.Persistence;
 using Microsoft.AspNetCore.SignalR;
 
@@ -7,18 +8,18 @@ namespace ConnectFour.Hubs;
 
 public record NewGameMessage(string PlayerId);
 
-public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, LobbyHub lobby) : Hub
+public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, PlayersContext players) : Hub
 {
-    private static readonly ConcurrentQueue<Player> UsersQueue = new();
+    private static readonly ConcurrentQueue<PlayerConnection> UsersQueue = new();
 
     public async Task NewGame(NewGameMessage message)
     {
-        var conn = Context.ConnectionId;
+        var conn = new ConnectionId(Context.ConnectionId);
         var userId = new PlayerId(message.PlayerId);
 
         if (UsersQueue.IsEmpty)
         {
-            UsersQueue.Enqueue(new Player(userId, conn));
+            UsersQueue.Enqueue(new PlayerConnection(userId, conn));
             return;
         }
 
@@ -28,8 +29,8 @@ public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, 
         var log = new GameLog
         {
             GameId = GameId.Create(),
-            FirstPlayer = new Player(userId, conn),
-            SecondPlayer = secondUser,
+            FirstPlayerConnection = new PlayerConnection(userId, conn),
+            SecondPlayerConnection = secondUser,
         };
 
         await StartGame(log, CancellationToken.None);
@@ -37,11 +38,13 @@ public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, 
 
     private async Task StartGame(GameLog log, CancellationToken ct)
     {
-        state.NewGame(log);
-        lobby.UpdateLobbyAfterGameStarted(log);
+        var (gameId, firstPlayerId, secondPlayerId) = log;
+        context.NewGame(log);
+        players.GameStarted(firstPlayerId, gameId);
+        players.GameStarted(secondPlayerId, gameId);
         
-        await hubContext.Groups.AddToGroupAsync(log.FirstPlayer.Connection, log.GameId.Value, ct);
-        await hubContext.Groups.AddToGroupAsync(log.SecondPlayer.Connection, log.GameId.Value, ct);
+        await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId.Value, ct);
+        await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId.Value, ct);
 
         var message = $"""
                         <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
@@ -53,11 +56,17 @@ public class GameHub(IHubContext<GameHub> hubContext, InMemoryGamesState state, 
             .SendAsync("game-started", message, ct);
     }
 
-    public async Task SendCompletedGameMessage(GameId gameId, PlayerId playerId)
+    public async Task SendCompletedGameMessage(GameId gameId, PlayerId winnerId)
     {
-        lobby.UpdateLobbyAfterGameEnded(gameId);
-        
-        var message = $"""<script>alert("Resignation, player {playerId.Value} won!");</script>""";
+        var message = $"""<script>alert("Player {winnerId.Value} won!");</script>""";
+        await hubContext.Clients
+            .Group(gameId.Value)
+            .SendAsync("game-completed", message);
+    }
+    
+    public async Task SendResignationMessage(GameId gameId, PlayerId winnerId)
+    {
+        var message = $"""<script>alert("Resignation, player {winnerId.Value} won!");</script>""";
         await hubContext.Clients
             .Group(gameId.Value)
             .SendAsync("game-completed", message);

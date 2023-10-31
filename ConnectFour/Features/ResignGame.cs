@@ -1,5 +1,6 @@
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
+using ConnectFour.Models;
 using ConnectFour.Persistence;
 using MiWrap;
 
@@ -16,24 +17,27 @@ public class ResignEndpoint : IEndpoint
             .DisableAntiforgery();
 }
 
-internal class ResignHandler(InMemoryGamesState gamesState, GameHub hub) : IHttpCommandHandler<Resign>
+internal class ResignHandler(GamesContext gamesContext, GameHub hub, PlayersContext players) : IHttpCommandHandler<Resign>
 {
     public async Task<IResult> HandleAsync(Resign command, CancellationToken cancellationToken = default)
     {
         var (playerId, gameId) = command;
-        var gameLog = gamesState.GetState(gameId);
+        var gameLog = gamesContext.GetState(gameId);
 
         if (gameLog.IsComplete) return Results.BadRequest("Game is already completed");
-        if (gameLog.FirstPlayer.PlayerId != playerId && gameLog.SecondPlayer.PlayerId != playerId)
+        if (gameLog.FirstPlayerConnection.PlayerId != playerId && gameLog.SecondPlayerConnection.PlayerId != playerId)
             return Results.BadRequest("You are not allowed to resign!");
 
         gameLog.Complete();
-        gamesState.UpdateState(gameLog);
+        gamesContext.UpdateState(gameLog);
 
-        var winner = gameLog.FirstPlayer.PlayerId == playerId
-            ? gameLog.SecondPlayer.PlayerId
-            : gameLog.FirstPlayer.PlayerId;
-        await hub.SendCompletedGameMessage(gameId, winner);
+        var winner = gameLog.FirstPlayerConnection.PlayerId == playerId
+            ? gameLog.SecondPlayerConnection.PlayerId
+            : gameLog.FirstPlayerConnection.PlayerId;
+        await hub.SendResignationMessage(gameId, winner);
+        
+        players.GameEnded(winner, GameResult.Win);
+        players.GameEnded(playerId, GameResult.Lose);
 
         return Results.Accepted();
     }

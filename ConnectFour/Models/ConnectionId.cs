@@ -1,4 +1,4 @@
-namespace ConnectFour.Persistence;
+namespace ConnectFour.Models;
 
 public readonly record struct ConnectionId(string Value) : IParsable<ConnectionId>
 {

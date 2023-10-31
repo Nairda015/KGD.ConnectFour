@@ -1,10 +1,10 @@
 @using ConnectFour.Persistence
 @using System.Collections.Concurrent
+@using ConnectFour.Models
 
-<tr id="@ConnectionId"
-    signalr-subscribe="lobby-player-@ConnectionId"
-    hx-swap="outerHTML">
-    <td class="border-r-2">@ConnectionId</td>
+<tr id="@PlayerId.ToString()">
+    <td class="border-r-2">@Score.ToString()</td>
+    <td class="border-r-2">@PlayerId</td>
     @if (GameId is null)
     {
         <td>...</td>
@@ -18,9 +18,12 @@
 @code {
 
     [Parameter]
-    public required string ConnectionId { get; set; }
+    public required PlayerId PlayerId { get; set; }
 
     [Parameter]
     public required GameId? GameId { get; set; }
+
+    [Parameter]
+    public required Score Score { get; set; }
 
 }

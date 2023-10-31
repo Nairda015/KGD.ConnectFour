@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
 using ConnectFour.Domain;
+using ConnectFour.Models;
 
 namespace ConnectFour.Persistence;
 
-public class InMemoryGamesState
+public class GamesContext
 {
     private readonly ConcurrentDictionary<GameId, GameLog> _gamesState = new();
 

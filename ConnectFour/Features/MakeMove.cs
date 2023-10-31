@@ -1,6 +1,7 @@
 using ConnectFour.Domain;
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
+using ConnectFour.Models;
 using ConnectFour.Persistence;
 using MiWrap;
 
@@ -17,12 +18,12 @@ public class MakeMoveEndpoint : IEndpoint
             .DisableAntiforgery();
 }
 
-internal class MakeMoveHandler(InMemoryGamesState gamesState, GameHub hub) : IHttpCommandHandler<MakeMove>
+internal class MakeMoveHandler(GamesContext gamesContext, GameHub hub, PlayersContext players) : IHttpCommandHandler<MakeMove>
 {
     public async Task<IResult> HandleAsync(MakeMove command, CancellationToken cancellationToken = default)
     {
         var (playerId, gameId, chosenColumn) = command;
-        var gameLog = gamesState.GetState(gameId);
+        var gameLog = gamesContext.GetState(gameId);
 
         if (gameLog.IsComplete) return Results.BadRequest("Game is already completed");
         if (gameLog.GetCurrentPlayerId != playerId) return Results.BadRequest("It's not your turn");
@@ -35,10 +36,20 @@ internal class MakeMoveHandler(InMemoryGamesState gamesState, GameHub hub) : IHt
         gameLog.AddMove(chosenColumn);
         if (move.MoveResult is MoveResult.Win) gameLog.Complete();
 
-        gamesState.UpdateState(gameLog);
+        gamesContext.UpdateState(gameLog);
 
+        //TODO: mark after adding move is buggy 
+        //TODO: board is full scenario
         await hub.MarkMove(gameLog, move.Position!.Value, cancellationToken);
-        if (gameLog.IsComplete) await hub.SendCompletedGameMessage(gameId, playerId);
+        if (gameLog.IsComplete)
+        {
+            await hub.SendCompletedGameMessage(gameId, playerId);
+            var looser = gameLog.FirstPlayerConnection.PlayerId == playerId
+                ? gameLog.SecondPlayerConnection.PlayerId
+                : gameLog.FirstPlayerConnection.PlayerId;
+            players.GameEnded(playerId, GameResult.Win);
+            players.GameEnded(looser, GameResult.Lose);
+        }
 
         return Results.Accepted();
     }

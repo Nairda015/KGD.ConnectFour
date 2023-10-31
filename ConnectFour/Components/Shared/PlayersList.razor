@@ -1,13 +1,13 @@
 @using ConnectFour.Persistence
 
 
-@foreach (var (conn, gameId) in Players.GetAll().Take(10))
+@foreach (var (score, playerId, gameId) in Players.GetBestPlayers())
 {
-    <PlayerRow ConnectionId="@conn" GameId="@gameId"/>
+    <PlayerRow Score="@score" PlayerId="@playerId" GameId="@gameId"/>
 }
 
 @code {
 
     [Inject]
-    public required Lobby Players { get; set; }
+    public required PlayersContext Players { get; set; }
 }

@@ -1,10 +1,17 @@
-using System.Web;
+using Microsoft.IdentityModel.Tokens;
 
-namespace ConnectFour.Persistence;
+namespace ConnectFour.Models;
 
 public readonly record struct GameId(string Value) : IParsable<GameId>
 {
-    public static GameId Create() => new(HttpUtility.UrlEncode(Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..^2]));
+    public static GameId Create()
+    {
+        var buffer = new byte[7]; //produce 10 char long ID
+        Random.Shared.NextBytes(buffer);
+        var id =  Base64UrlEncoder.Encode(buffer);
+        return new GameId(id);
+    }
+    
     public override string ToString() => Value;
     public static GameId Parse(string s, IFormatProvider? provider) => new(s);
     public static bool TryParse(string? s, IFormatProvider? provider, out GameId result)
