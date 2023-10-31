@@ -65,7 +65,8 @@ public class PlayersContext : Dictionary<PlayerId, Player>
         .ToList();
     private bool ShouldInvalidateCache(Player player, InvalidationScenario scenario)
     {
-        if (_cachedBestPlayers is null || Count is 0) return false;
+        if(_cachedBestPlayers is null || Count is 0) return false;
+        if (_cachedBestPlayers.Count < LobbyPlayersCount) return true;
         return scenario switch
         {
             InvalidationScenario.KnownPlayerConnected => player.Score.Wins > _cachedBestPlayers.Last().Score.Wins,

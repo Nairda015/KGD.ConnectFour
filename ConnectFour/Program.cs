@@ -59,15 +59,14 @@ app.MapGet("game-buttons", () => new RazorComponentResult(typeof(InGameButtons))
 
 app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
 {
-    var gameExist = db.TryGetGameState(gameId, out var log);
-
-    if (gameExist)
+    //TODO: create separate endpoint for game search
+    if (db.TryGetGameState(gameId, out var log) && !log!.IsComplete)
     {
         //replace target and refresh board 
         //if game is on going subscribe to group (how to handle dropped subscription?)
         return Results.Ok();
     }
-    
+
     //ctx.Response.Headers.Add("HX-Push-Url", "/");
     return Results.Redirect("/");
 });
