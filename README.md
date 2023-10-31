@@ -1,6 +1,7 @@
 # TODO:
 ### features:
 - [x] (A) resign
+- [ ] (A) waiting indicator
 - [ ] (C) take back flow
 - [ ] (A) click website name to refresh to main page - refactor needed
 - [ ] (B) handler game search
