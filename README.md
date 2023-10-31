@@ -10,6 +10,7 @@
 - [ ] (?) change name
 - [ ] (?) passwords
 - [ ] (A) new game button after game ended 
+- [ ] (B) exception middleware 
 
 ### refactor:
 - [ ] (B) return from razor (disc)
