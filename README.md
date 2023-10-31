@@ -1,33 +1,35 @@
 # TODO:
 ### features:
-- [x] resign
-- [ ] take back flow
-- [ ] click website name to refresh to main page (what about userId?)
-- [ ] handler game search
-- [ ] handle game spectators
-- [ ] add interaction to lobby game ids
-- [ ] custom name for players (dialog?)
-- [ ] change name
-- [ ] passwords?
+- [x] (A) resign
+- [ ] (C) take back flow
+- [ ] (A) click website name to refresh to main page - refactor needed
+- [ ] (B) handler game search
+- [ ] (B) handle game spectators
+- [ ] (C) add interaction to lobby game ids
+- [ ] (?) custom name for players (dialog?)
+- [ ] (?) change name
+- [ ] (?) passwords
+- [ ] (A) new game button after game ended 
 
 ### refactor:
-- [ ] return from razor (disc)
-- [ ] Home and Layout
-- [ ] files from template
-- [x] lobby update - cache and cache invalidation
-- [x] simplify lobby hub
+- [ ] (B) return from razor (disc)
+- [ ] (A) Home and Layout
+- [ ] (C) remove files from template
+- [x] (A) lobby update - cache and cache invalidation
+- [x] (A) simplify lobby hub
+- [x] (A) fix storage override on page refresh
 
 ### signalr:
-- [x] replace new game to resign button
-- [x] handle player id instead of lobby connection in connect request
-- [ ] update score
+- [x] (A) replace new game to resign button
+- [x] (A) handle player id instead of lobby connection in connect request
+- [ ] (A) update score
 
 ### ui:
-- [x] add player name
-- [ ] dark mode
-- [ ] hover all column
-- [x] add player score to lobby and order them by most wins
-- [x] shorten game ids
+- [x] (A) add player name
+- [ ] (A) dark mode
+- [ ] (A) hover all column
+- [x] (A) add player score to lobby and order them by most wins
+- [x] (A) shorten game ids
 
 
 # TIME SPENT ON THIS PROJECT:
