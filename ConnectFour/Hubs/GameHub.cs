@@ -48,7 +48,7 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
 
         var message = $"""
                         <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
-                        <div class="hidden" hx-get="/game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#new-game-button"></div>
+                        <div class="hidden" hx-get="/in-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#new-game-buttons"></div>
                         <script>sessionStorage.setItem("GameId", "{log.GameId.ToString()}");</script>
                         """;
         await hubContext.Clients
@@ -58,7 +58,10 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
 
     public async Task SendCompletedGameMessage(GameId gameId, PlayerId winnerId)
     {
-        var message = $"""<script>alert("Player {winnerId.Value} won!");</script>""";
+        var message = $"""
+                       <div class="hidden" hx-get="/new-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#in-game-buttons"></div>
+                       <script>alert("Player {winnerId.Value} won!");</script>
+                       """;
         await hubContext.Clients
             .Group(gameId.Value)
             .SendAsync("game-completed", message);
@@ -66,7 +69,10 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
     
     public async Task SendResignationMessage(GameId gameId, PlayerId winnerId)
     {
-        var message = $"""<script>alert("Resignation, player {winnerId.Value} won!");</script>""";
+        var message = $"""
+                       <div class="hidden" hx-get="/new-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#in-game-buttons"></div>
+                       <script>alert("Resignation, player {winnerId.Value} won!");</script>
+                       """;
         await hubContext.Clients
             .Group(gameId.Value)
             .SendAsync("game-completed", message);

@@ -1,4 +1,5 @@
 ﻿@using ConnectFour.Models
+@using ConnectFour.Components.Shared
 @inherits LayoutComponentBase
 
 <div id="page" class="page">
@@ -12,24 +13,16 @@
             <div id="playerId" class="w-full px-4 py-2 text-center max-w-md mx-auto">
                 <div id="playerIdValue" class="text-2xl border-2 rounded py-2"> @_playerId </div>
             </div>
-            <div id="score" class="w-full px-4 py-2 text-center max-w-md mx-auto">
-                <div id="scoreValue" class="text-2xl border-2 rounded py-2"> 0 / 0 / 0 </div>
-            </div>
+            <PlayerScore PlayerId="@_playerId"/>
 
             <div id="board" class="w-full px-4 py-2 max-w-md mx-auto">
                 @Body
             </div>
             
-            <div id="new-game-button" class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto">
-                <div class="p-1 w-full border-2 rounded text-center"
-                     signalr-send="newGame"
-                     hx-vals='js:{playerId: sessionStorage.getItem("PlayerId")}'>
-                    New Game
-                </div>
-            </div>
+            <NewGameButtons/>
 
             <div id="new-game-hack" signalr-subscribe="game-started"></div>
-            <div id="game-completed" signalr-subscribe="game-completed"></div>
+            <div id="game-completed-hack" signalr-subscribe="game-completed"></div>
         </div>
         
         <div id="lobby" class="w-full px-4 py-2 max-w-md mx-auto">
@@ -65,6 +58,11 @@
     
     let playerNameDiv = document.getElementById("playerIdValue");
     playerNameDiv.innerText = playerId;
+    
+    let playerScoreDiv = document.getElementById("player-score-value");
+    let hxGetAttribute = playerScoreDiv.getAttribute("signalr-connect");
+    playerScoreDiv.setAttribute("hx-get", `/score/${playerId}`);
+    
     let lobbyConnectionDiv = document.getElementById("lobby-connection");
     let signalrConnectAttribute = lobbyConnectionDiv.getAttribute("signalr-connect");
     lobbyConnectionDiv.setAttribute("signalr-connect", `/lobby-hub?playerId=${playerId}`);

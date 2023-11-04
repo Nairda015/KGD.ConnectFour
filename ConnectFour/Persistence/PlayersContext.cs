@@ -55,7 +55,8 @@ public class PlayersContext : Dictionary<PlayerId, Player>
 
         if (ShouldInvalidateCache(player, InvalidationScenario.GameEnded)) InvalidateCache();
     }
-    
+    public Score GetPlayerScore(PlayerId playerId) => ContainsKey(playerId) ? this[playerId].Score : Score.Default;
+
     private List<LobbyReadModel>? _cachedBestPlayers;
     public IEnumerable<LobbyReadModel> GetBestPlayers() => _cachedBestPlayers ??= Values
         .Where(x => x.IsActive)
@@ -110,6 +111,7 @@ public enum InvalidationScenario
 
 public class Score
 {
+    public static Score Default = new();
     public int Wins { get; private set; }
     public int Draws { get; private set; }
     public int Losses { get; private set; }
