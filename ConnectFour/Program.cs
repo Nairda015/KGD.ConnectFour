@@ -55,6 +55,13 @@ app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
     return Results.Ok();
 });
 
+app.MapGet("click", async() =>
+{
+    await Task.Delay(800);
+    return Results.Ok(Guid.NewGuid().ToString());
+});
+
+
 app.MapGet("in-game-buttons", () => new RazorComponentResult(typeof(InGameButtons)));
 app.MapGet("new-game-buttons", () => new RazorComponentResult(typeof(NewGameButtons)));
 app.MapGet("score/{playerId}", (PlayerId playerId, PlayersContext ctx) => ctx.GetPlayerScore(playerId).ToString());

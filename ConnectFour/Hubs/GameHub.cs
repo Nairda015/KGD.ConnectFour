@@ -20,6 +20,15 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
         if (UsersQueue.IsEmpty)
         {
             UsersQueue.Enqueue(new PlayerConnection(userId, conn));
+            await hubContext.Clients
+                .Client(conn)
+                .SendAsync(
+                    "show-indicator",
+                    """
+                    <div class="p-1 w-full border-2 rounded text-center">
+                        <img id="indicator" class="w-full p-1 max-h-10 aspect-square opacity-30" src="grid.svg" alt="indicator">
+                    </div>
+                    """);
             return;
         }
 
@@ -42,15 +51,15 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
         context.NewGame(log);
         players.GameStarted(firstPlayerId, gameId);
         players.GameStarted(secondPlayerId, gameId);
-        
+
         await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId.Value, ct);
         await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId.Value, ct);
 
         var message = $"""
-                        <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
-                        <div class="hidden" hx-get="/in-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#new-game-buttons"></div>
-                        <script>sessionStorage.setItem("GameId", "{log.GameId.ToString()}");</script>
-                        """;
+                       <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
+                       <div class="hidden" hx-get="/in-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#new-game-buttons"></div>
+                       <script>sessionStorage.setItem("GameId", "{log.GameId.ToString()}");</script>
+                       """;
         await hubContext.Clients
             .Group(log.GameId.Value)
             .SendAsync("game-started", message, ct);
@@ -66,7 +75,7 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
             .Group(gameId.Value)
             .SendAsync("game-completed", message);
     }
-    
+
     public async Task SendResignationMessage(GameId gameId, PlayerId winnerId)
     {
         var message = $"""

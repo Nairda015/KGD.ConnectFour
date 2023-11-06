@@ -1,5 +1,6 @@
 <div id="new-game-buttons" 
-     class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto">
+     class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto"
+     signalr-subscribe="show-indicator">
     <div class="p-1 w-full border-2 rounded text-center"
          signalr-send="newGame"
          hx-vals='js:{playerId: sessionStorage.getItem("PlayerId")}'>

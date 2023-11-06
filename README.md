@@ -1,7 +1,7 @@
 # TODO:
 ### features:
 - [x] (A) resign
-- [ ] (A) waiting indicator (NOW)
+- [x] (A) waiting indicator
 - [ ] (C) take back flow
 - [ ] (A) click website name to refresh to main page - refactor needed
 - [ ] (B) handler game search
@@ -14,7 +14,7 @@
 - [ ] (B) exception middleware 
 
 ### refactor:
-- [ ] (B) return from razor (disc)
+- [ ] (B) return from razor (disc, indicator)
 - [ ] (A) Home and Layout
 - [ ] (C) remove files from template
 - [x] (A) lobby update - cache and cache invalidation
@@ -43,14 +43,11 @@
 - 29.10 | 380 min
 - 30.10 | 300 min
 - 31.10 | 180 min
-- 01.11 | 0 min
-- 02.11 | 0 min
-- 03.11 | 0 min
-- 04.11 | 50 min
-
+- 04.11 | 60 min
+- 06.11 | 130 min
 
 
 ## SUM
-30 + 420 + 380 + 440 + 380 + 300 + 180 + 50
-### 2180
+30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130
+### 2320
 
