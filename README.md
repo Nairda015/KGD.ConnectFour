@@ -3,7 +3,7 @@
 - [x] (A) resign
 - [x] (A) waiting indicator
 - [ ] (C) take back flow
-- [ ] (A) click website name to refresh to main page - refactor needed
+- [x] (A) click website name to refresh to main page - refactor needed 
 - [ ] (B) handler game search
 - [ ] (B) handle game spectators
 - [ ] (C) add interaction to lobby game ids
@@ -12,10 +12,11 @@
 - [ ] (?) passwords
 - [x] (A) new game button after game ended
 - [ ] (B) exception middleware 
+- [ ] ( ) do not refresh board if game is not completed or auto resign?
 
 ### refactor:
 - [ ] (B) return from razor (disc, indicator)
-- [ ] (A) Home and Layout
+- [x] (A) Home and Layout
 - [ ] (C) remove files from template
 - [x] (A) lobby update - cache and cache invalidation
 - [x] (A) simplify lobby hub

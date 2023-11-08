@@ -1,19 +1,41 @@
 ﻿@page "/"
+@using ConnectFour.Components.Shared
+@using ConnectFour.Models
 
-<div class="grid grid-cols-7 gap-1">
-    @foreach (var i in Enumerable.Range(0, 6))
-    {
-        @foreach (var j in Enumerable.Range(0, 7))
-        {
-            <div signalr-subscribe="mark-move-@i-@j">
-                <div
-                    id="cell-@i-@j"
-                    class="aspect-square p-1 border-2 rounded text-center hover:bg-sky-700"
-                    hx-post="move"
-                    hx-swap="none"
-                    hx-vals='js:{playerId: sessionStorage.getItem("PlayerId"), gameId: sessionStorage.getItem("GameId"), columnNumber: @j}'>
-                </div>
-            </div>
-        }
-    }
+<div id="game" hx-ext="signalr" signalr-connect="/game-hub">
+    <PlayerLabel PlayerId="@_playerId"/>
+    <PlayerScore PlayerId="@_playerId"/>
+    <Board/>
+    <NewGameButtons/>
+
+    <div id="new-game-hack" signalr-subscribe="game-started"></div>
+    <div id="game-completed-hack" signalr-subscribe="game-completed"></div>
 </div>
+
+<Lobby/>
+
+
+<script>
+    let playerId = sessionStorage.getItem("PlayerId");
+    console.log(playerId)
+    if (playerId == null) {
+        sessionStorage.setItem("PlayerId", "@_playerId.ToString()");
+        playerId = "@_playerId.ToString()";
+    }
+    
+    let playerNameDiv = document.getElementById("playerIdValue");
+    playerNameDiv.innerText = playerId;
+    
+    let playerScoreDiv = document.getElementById("player-score-value");
+    let hxGetAttribute = playerScoreDiv.getAttribute("signalr-connect");
+    playerScoreDiv.setAttribute("hx-get", `/score/${playerId}`);
+    
+    let lobbyConnectionDiv = document.getElementById("lobby-connection");
+    let signalrConnectAttribute = lobbyConnectionDiv.getAttribute("signalr-connect");
+    lobbyConnectionDiv.setAttribute("signalr-connect", `/lobby-hub?playerId=${playerId}`);
+</script>
+
+@code
+{
+    private readonly PlayerId _playerId = PlayerId.Create();
+}

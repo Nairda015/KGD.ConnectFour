@@ -1,60 +1,16 @@
-﻿@using ConnectFour.Models
-@using ConnectFour.Components.Shared
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
-
-<div id="page" class="page">
+<div class="page">
     <div class="flex w-full px-4 pb-2 pt-4 max-w-md mx-auto">
         <NavMenu/>
     </div>
 
-    <main>
-
-        <div id="game" hx-ext="signalr" signalr-connect="/game-hub">
-            <div id="playerId" class="w-full px-4 py-2 text-center max-w-md mx-auto">
-                <div id="playerIdValue" class="text-2xl border-2 rounded py-2"> @_playerId </div>
-            </div>
-            <PlayerScore PlayerId="@_playerId"/>
-
-            <div id="board" class="w-full px-4 py-2 max-w-md mx-auto">
-                @Body
-            </div>
-
-            <NewGameButtons/>
-            
-            <div id="new-game-hack" signalr-subscribe="game-started"></div>
-            <div id="game-completed-hack" signalr-subscribe="game-completed"></div>
-        </div>
-
-        <Lobby/>
-        
+    <main id="body">
+        @Body
     </main>
 </div>
 
-<script>
-    let playerId = sessionStorage.getItem("PlayerId");
-    console.log(playerId)
-    if (playerId == null) {
-        sessionStorage.setItem("PlayerId", "@_playerId.ToString()");
-        playerId = "@_playerId.ToString()";
-    }
-    
-    let playerNameDiv = document.getElementById("playerIdValue");
-    playerNameDiv.innerText = playerId;
-    
-    let playerScoreDiv = document.getElementById("player-score-value");
-    let hxGetAttribute = playerScoreDiv.getAttribute("signalr-connect");
-    playerScoreDiv.setAttribute("hx-get", `/score/${playerId}`);
-    
-    let lobbyConnectionDiv = document.getElementById("lobby-connection");
-    let signalrConnectAttribute = lobbyConnectionDiv.getAttribute("signalr-connect");
-    lobbyConnectionDiv.setAttribute("signalr-connect", `/lobby-hub?playerId=${playerId}`);
-</script>
 
-@code
-{
-    private readonly PlayerId _playerId = PlayerId.Create();
-}
 
 @* TODO *@
 @* <div id="blazor-error-ui"> *@

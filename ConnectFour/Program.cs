@@ -80,6 +80,8 @@ app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
     return Results.Redirect("/");
 });
 
+app.MapGet("refresh-board", () => new RazorComponentResult(typeof(Board)));
+
 
 app.UseSwagger();
 app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Upskill"); });
