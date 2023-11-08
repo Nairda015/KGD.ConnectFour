@@ -1,8 +1,10 @@
 using ConnectFour.Components;
 using ConnectFour.Components.Shared;
+using ConnectFour.Extensions;
 using ConnectFour.Hubs;
 using ConnectFour.Models;
 using ConnectFour.Persistence;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http.HttpResults;
 using MiWrap;
 
@@ -10,16 +12,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddSignalR();
-builder.Services.AddHostedService<BackgroundPublisher>();
-builder.Services.AddSingleton<WsHubTest>();
-builder.Services.AddSingleton<GameHub>();
-builder.Services.AddSingleton<LobbyHub>();
-builder.Services.AddSingleton<PlayersContext>();
-
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+//ws test
+builder.Services.AddHostedService<BackgroundPublisher>();
+builder.Services.AddSingleton<WsHubTest>();
+
+//hubs
+builder.Services.AddScoped<GameHub>();
+builder.Services.AddScoped<LobbyHub>();
+
+
+builder.Services.AddSingleton<PlayersContext>();
 builder.Services.AddSingleton<GamesContext>();
+
 builder.Services.RegisterHandlers<Program>();
+
+//razor to string rendering 
+builder.Services.AddScoped<HtmlRenderer>();
+builder.Services.AddScoped<BlazorRenderer>();
 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -81,6 +92,13 @@ app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
 });
 
 app.MapGet("refresh-board", () => new RazorComponentResult(typeof(Board)));
+
+
+app.MapGet("test-multi", async (BlazorRenderer renderer) =>
+{
+    var result = await renderer.RenderComponent<MultiSwap>();
+    return Results.Extensions.Htmx(result);
+});
 
 
 app.UseSwagger();

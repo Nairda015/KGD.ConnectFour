@@ -1,0 +1,10 @@
+﻿@page "/multi-swap"
+
+<PageTitle>Multi Swap</PageTitle>
+
+<div hx-ext="multi-swap">
+    <div hx-get="test-multi" hx-swap="multi:#submenu,#content">Change</div>
+    <div id="submenu">... submenu contains items by selected top-level menu ...</div>
+</div>
+
+<div id="content">...</div>

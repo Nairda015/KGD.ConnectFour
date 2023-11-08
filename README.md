@@ -4,18 +4,18 @@
 - [x] (A) waiting indicator
 - [ ] (C) take back flow
 - [x] (A) click website name to refresh to main page - refactor needed 
-- [ ] (B) handler game search
-- [ ] (B) handle game spectators
+- [ ] (A) handler game search
+- [ ] (A) handle game spectators
 - [ ] (C) add interaction to lobby game ids
 - [ ] (?) custom name for players (dialog?)
 - [ ] (?) change name
 - [ ] (?) passwords
 - [x] (A) new game button after game ended
 - [ ] (B) exception middleware 
-- [ ] ( ) do not refresh board if game is not completed or auto resign?
+- [ ] (A) do not refresh board if game is not completed or auto resign?
 
 ### refactor:
-- [ ] (B) return from razor (disc, indicator)
+- [x] (B) return from razor (disc, indicator)
 - [x] (A) Home and Layout
 - [ ] (C) remove files from template
 - [x] (A) lobby update - cache and cache invalidation
@@ -32,6 +32,7 @@
 - [x] (A) add player name
 - [ ] (A) dark mode
 - [ ] (B) hover all column
+- [x] (B) change alert to modal
 - [x] (A) add player score to lobby and order them by most wins
 - [x] (A) shorten game ids
 

@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
+using ConnectFour.Components.Shared;
+using ConnectFour.Components.Shared.Notifications;
 using ConnectFour.Domain;
+using ConnectFour.Extensions;
 using ConnectFour.Models;
 using ConnectFour.Persistence;
 using Microsoft.AspNetCore.SignalR;
@@ -8,7 +11,10 @@ namespace ConnectFour.Hubs;
 
 public record NewGameMessage(string PlayerId);
 
-public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, PlayersContext players) : Hub
+public class GameHub(IHubContext<GameHub> hubContext,
+    GamesContext context,
+    PlayersContext players,
+    BlazorRenderer renderer) : Hub
 {
     private static readonly ConcurrentQueue<PlayerConnection> UsersQueue = new();
 
@@ -16,19 +22,13 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
     {
         var conn = new ConnectionId(Context.ConnectionId);
         var userId = new PlayerId(message.PlayerId);
-
+        
         if (UsersQueue.IsEmpty)
         {
             UsersQueue.Enqueue(new PlayerConnection(userId, conn));
             await hubContext.Clients
                 .Client(conn)
-                .SendAsync(
-                    "show-indicator",
-                    """
-                    <div class="p-1 w-full border-2 rounded text-center">
-                        <img id="indicator" class="w-full p-1 max-h-10 aspect-square opacity-30" src="grid.svg" alt="indicator">
-                    </div>
-                    """);
+                .SendAsync("show-indicator", await renderer.RenderComponent<Indicator>());
             return;
         }
 
@@ -69,10 +69,8 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
 
     public async Task SendCompletedGameMessage(GameId gameId, PlayerId winnerId)
     {
-        var message = $"""
-                       <div class="hidden" hx-get="/new-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#in-game-buttons"></div>
-                       <script>alert("Player {winnerId.Value} won!");</script>
-                       """;
+        var message = await renderer.RenderComponent<GameCompletedMessage>(
+            new Dictionary<string, object?> {{nameof(GameCompletedMessage.PlayerId), winnerId}});
         await hubContext.Clients
             .Group(gameId.Value)
             .SendAsync("game-completed", message);
@@ -80,10 +78,8 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
 
     public async Task SendResignationMessage(GameId gameId, PlayerId winnerId)
     {
-        var message = $"""
-                       <div class="hidden" hx-get="/new-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#in-game-buttons"></div>
-                       <script>alert("Resignation, player {winnerId.Value} won!");</script>
-                       """;
+        var message = await renderer.RenderComponent<ResignationMessage>(
+            new Dictionary<string, object?> {{nameof(ResignationMessage.PlayerId), winnerId}});
         await hubContext.Clients
             .Group(gameId.Value)
             .SendAsync("game-completed", message);
@@ -92,7 +88,8 @@ public class GameHub(IHubContext<GameHub> hubContext, GamesContext context, Play
     public async Task MarkMove(GameLog log, Position movePosition, CancellationToken ct)
     {
         var colour = log.CurrentPlayerColor.ToString().ToLower();
-        var message = $"""<div class="aspect-square bg-{colour}-600 border-2 rounded-full border-black"></div>""";
+        var message = await renderer.RenderComponent<Disc>(
+            new Dictionary<string, object?> {{nameof(Disc.Colour), colour}});
 
         await hubContext.Clients
             .Group(log.GameId.Value)
