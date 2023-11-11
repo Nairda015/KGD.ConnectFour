@@ -1,5 +1,18 @@
-<div class="aspect-square bg-@Colour-600 border-2 rounded-full border-black"></div>
+<div class="flex aspect-square nm-hole rounded">
+    @if (Colour == "red")
+    {
+        <div class="before:bg-red-500 after:bg-red-500 m-auto w-[90%] h-[90%] cross before:rounded after:rounded"></div>
+    }
+    else
+    {
+        <div class="w-[70%] h-[70%] bg-yellow-500 nm-flat m-auto rounded-full"></div>
+    }
+</div>
+
 
 @code {
-    [Parameter] public required string Colour { get; set; }
+
+    [Parameter]
+    public required string Colour { get; set; }
+
 }

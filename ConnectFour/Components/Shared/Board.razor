@@ -7,7 +7,7 @@
                 <div signalr-subscribe="mark-move-@i-@j">
                     <div
                         id="cell-@i-@j"
-                        class="aspect-square p-1 border-2 rounded text-center hover:bg-sky-700"
+                        class="aspect-square nm-hole rounded"
                         hx-post="move"
                         hx-swap="none"
                         hx-vals='js:{playerId: sessionStorage.getItem("PlayerId"), gameId: sessionStorage.getItem("GameId"), columnNumber: @j}'>

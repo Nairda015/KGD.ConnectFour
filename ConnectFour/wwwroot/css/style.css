@@ -1,0 +1,48 @@
+:root {
+    --shadow-color: #0d275040;
+}
+
+.nm-plate {
+    box-shadow: 4px 4px 7px var(--shadow-color),
+    -3px -3px 6px #ffffff,
+    inset -5px -5px 6px #ffffff,
+    inset 4px 4px 6px var(--shadow-color);
+}
+
+.nm-flat {
+    box-shadow: 4px 4px 7px var(--shadow-color),
+    -3px -3px 6px #ffffff;
+}
+
+
+.nm-hole {
+    box-shadow: inset -2px -2px 4px #ffffff,
+    inset 3px 3px 4px var(--shadow-color);
+}
+
+
+
+.cross {
+    position: relative;
+    filter: drop-shadow(4px 4px 5px var(--shadow-color)) drop-shadow(-3px -3px 5px #ffffff);
+}
+
+.cross:before, .cross:after {
+    content: "";
+    position: absolute;
+    transform: rotate(45deg);
+}
+
+.cross:before {
+    left: 50%;
+    width: 30%;
+    margin-left: -15%;
+    height: 100%;
+}
+
+.cross:after {
+    top: 50%;
+    height: 30%;
+    margin-top: -15%;
+    width: 100%;
+}

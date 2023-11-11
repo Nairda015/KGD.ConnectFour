@@ -3,8 +3,8 @@
 @using ConnectFour.Models
 
 <tr id="@PlayerId.ToString()">
-    <td class="border-r-2">@Score.ToString()</td>
-    <td class="border-r-2">@PlayerId</td>
+    <td>@Score.ToString()</td>
+    <td>@PlayerId</td>
     @if (GameId is null)
     {
         <td>...</td>

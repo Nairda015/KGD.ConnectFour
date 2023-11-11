@@ -13,6 +13,7 @@
 - [x] (A) new game button after game ended
 - [ ] (B) exception middleware 
 - [ ] (A) do not refresh board if game is not completed or auto resign?
+- [ ] (A) your move indicator
 
 ### refactor:
 - [x] (B) return from razor (disc, indicator)
