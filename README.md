@@ -13,7 +13,7 @@
 - [x] (A) new game button after game ended
 - [ ] (B) exception middleware 
 - [ ] (A) do not refresh board if game is not completed or auto resign?
-- [ ] (A) your move indicator
+- [ ] (A) your move indicator (NOW)
 
 ### refactor:
 - [x] (B) return from razor (disc, indicator)
@@ -36,6 +36,7 @@
 - [x] (B) change alert to modal
 - [x] (A) add player score to lobby and order them by most wins
 - [x] (A) shorten game ids
+- [x] (A) update colors
 
 
 # TIME SPENT ON THIS PROJECT:
@@ -48,9 +49,12 @@
 - 31.10 | 180 min
 - 04.11 | 60 min
 - 06.11 | 130 min
-
+- 08.11 | 240 min
+- 09.11 | 100 min
+- 10.11 | 120 min
+- 11.11 | 80 min
 
 ## SUM
-30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130
-### 2320
+30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80
+### 2860
 
