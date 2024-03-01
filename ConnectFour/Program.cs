@@ -1,6 +1,5 @@
 using ConnectFour.Components;
 using ConnectFour.Components.Shared;
-using ConnectFour.Examples;
 using ConnectFour.Examples.WebSocket;
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
