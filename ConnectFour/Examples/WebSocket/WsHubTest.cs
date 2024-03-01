@@ -1,8 +1,7 @@
-using ConnectFour.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ConnectFour.Hubs;
+namespace ConnectFour.Examples.WebSocket;
 
 
 public class WsHubTest(IHubContext<WsHubTest> hubContext) : Hub
