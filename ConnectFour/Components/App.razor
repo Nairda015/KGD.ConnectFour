@@ -8,9 +8,9 @@
     <base href="/"/>
     <link rel="icon" type="image/png" href="favicon.ico"/>
 
-    <script src="https://unpkg.com/htmx.org@1.9.6" integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni" crossorigin="anonymous"></script>
-
-    <script src="https://unpkg.com/@@microsoft/signalr@next/dist/browser/signalr.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    
+    <script src="https://unpkg.com/@@microsoft/signalr@8.0.0/dist/browser/signalr.js"></script>
     <script src="/js/hx-signalr.js"></script>
     
     <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
@@ -24,7 +24,7 @@
     <HeadOutlet/>
 </head>
 
-<body class="bg-[#e5e5e5] text-[#000000d0]">
+<body class="bg-[#e5e5e5] text-[#000000d0]" hx-ext="signalr">
 <Routes/>
 </body>
 </html>

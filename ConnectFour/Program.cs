@@ -50,28 +50,23 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseAntiforgery();
-
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapHub<GameHub>("/game-hub");
 app.MapHub<WsHubTest>("/ws-hub");
 app.MapHub<LobbyHub>("/lobby-hub");
 
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
 app.MapEndpoints<Program>();
 
 
+//What?
 app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 {
     ctx.Response.Headers.Add("HX-Push-Url", $"game/{gameId}");
     return Results.Ok();
 });
-
-app.MapGet("click", async() =>
-{
-    await Task.Delay(800);
-    return Results.Ok(Guid.NewGuid().ToString());
-});
-
 
 app.MapGet("in-game-buttons", () => new RazorComponentResult(typeof(InGameButtons)));
 app.MapGet("new-game-buttons", () => new RazorComponentResult(typeof(NewGameButtons)));
@@ -97,11 +92,11 @@ app.MapGet("refresh-board", () => new RazorComponentResult(typeof(Board)));
 app.MapGet("test-multi", async (BlazorRenderer renderer) =>
 {
     var result = await renderer.RenderComponent<MultiSwap>();
-    return Results.Extensions.Htmx(result);
+    return Results.Extensions.Html(result);
 });
 
 
 app.UseSwagger();
-app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Upskill"); });
+app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Connect Four"); });
 
 app.Run();

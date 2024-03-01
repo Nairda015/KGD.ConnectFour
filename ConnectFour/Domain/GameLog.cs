@@ -1,5 +1,4 @@
 using ConnectFour.Models;
-using ConnectFour.Persistence;
 
 namespace ConnectFour.Domain;
 

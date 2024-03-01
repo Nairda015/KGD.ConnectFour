@@ -2,7 +2,7 @@
 @using ConnectFour.Components.Shared
 @using ConnectFour.Models
 
-<div id="game" hx-ext="signalr" signalr-connect="/game-hub">
+<div id="game" signalr-connect="/game-hub">
     <PlayerLabel PlayerId="@_playerId"/>
     <PlayerScore PlayerId="@_playerId"/>
     <Board/>

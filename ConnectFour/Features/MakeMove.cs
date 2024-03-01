@@ -43,12 +43,13 @@ internal class MakeMoveHandler(GamesContext gamesContext, GameHub hub, PlayersCo
         await hub.MarkMove(gameLog, move.Position!.Value, cancellationToken);
         if (gameLog.IsComplete)
         {
-            await hub.SendCompletedGameMessage(gameId, playerId);
             var looser = gameLog.FirstPlayerConnection.PlayerId == playerId
                 ? gameLog.SecondPlayerConnection.PlayerId
                 : gameLog.FirstPlayerConnection.PlayerId;
             players.GameEnded(playerId, GameResult.Win);
             players.GameEnded(looser, GameResult.Lose);
+            
+            await hub.SendCompletedGameMessage(gameId, playerId);
         }
 
         return Results.Accepted();

@@ -1,7 +1,6 @@
 <div id="lobby" class="w-full px-4 py-2 max-w-md mx-auto">
     <div id="lobby-connection"
          class="w-full nm-hole rounded py-1"
-         hx-ext="signalr"
          signalr-connect="/lobby-hub">
         <table class="w-full text-center">
             <thead>
@@ -11,10 +10,13 @@
                 <th>Game Id</th>
             </tr>
             </thead>
-            <tbody hx-get="/refresh-lobby"
-                   hx-headers='js:{playerId: sessionStorage.getItem("PlayerId")}'
-                   hx-trigger="load, every 2s">
+            <tbody
+                id="lobby-table-body"
+                hx-get="/refresh-lobby"
+                hx-trigger="load">
             </tbody>
+
+            <div id="lobby-updated-hack" signalr-subscribe="lobby-updated"></div>
         </table>
     </div>
 </div>

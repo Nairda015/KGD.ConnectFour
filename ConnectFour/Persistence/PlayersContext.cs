@@ -1,9 +1,11 @@
+using ConnectFour.Hubs;
 using ConnectFour.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ConnectFour.Persistence;
 
 //Update LastTimeActive only in connection events
-public class PlayersContext : Dictionary<PlayerId, Player>
+public class PlayersContext(LobbyHub lobbyHub) : Dictionary<PlayerId, Player>
 {
     private const int LobbyPlayersCount = 10;
     public void PlayerConnected(PlayerId playerId)
@@ -64,6 +66,7 @@ public class PlayersContext : Dictionary<PlayerId, Player>
         .Take(LobbyPlayersCount)
         .Select(x => new LobbyReadModel(x.Score, x.Id, x.CurrentGame))
         .ToList();
+    
     private bool ShouldInvalidateCache(Player player, InvalidationScenario scenario)
     {
         if(_cachedBestPlayers is null || Count is 0) return false;
@@ -78,7 +81,12 @@ public class PlayersContext : Dictionary<PlayerId, Player>
             _ => throw new ArgumentOutOfRangeException(nameof(scenario), scenario, null)
         };
     }
-    private void InvalidateCache() => _cachedBestPlayers = null;
+    private void InvalidateCache()
+    {
+        _cachedBestPlayers = null;
+        lobbyHub.SendLobbyUpdatedNotification();
+    }
+
     private static DateOnly Today() => DateOnly.FromDateTime(DateTime.Today);
 }
 
