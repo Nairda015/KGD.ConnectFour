@@ -1,9 +1,13 @@
 ﻿@page "/ws"
 
-<PageTitle>Ws</PageTitle>
+<PageTitle class="flex w-full px-4 pb-2 pt-4 max-w-md mx-auto">
+    <div class="flex w-full text-center nm-hole rounded">
+        Ws basic example
+    </div>
+</PageTitle>
 
-<div hx-ext="signalr" signalr-connect="/ws-hub" class="p-1 border-2 rounded text-center">
-    <p class="text-xl">Manual</p>
+<div hx-ext="signalr" signalr-connect="/ws-hub" class="w-full px-4 pb-2 pt-4 max-w-md mx-auto">
+    <p class="text-xl flex w-full text-center nm-hole rounded">Manual</p>
     <form hx-post="/new-message" hx-swap="none">
         <input type="text" name="message" class="border-2 rounded"/>
         <button type="submit" class="border-2 rounded">Send Event</button>
@@ -15,8 +19,8 @@
 
 <hr/>
 
-<div hx-ext="signalr" signalr-connect="/ws-hub" class="p-1 border-2 rounded text-center">
-    <p class="text-xl">Auto</p>
+<div hx-ext="signalr" signalr-connect="/ws-hub" class="w-full px-4 pb-2 pt-4 max-w-md mx-auto">
+    <p class="text-xl flex w-full text-center nm-hole rounded">Auto</p>
     <div role="status">Latest message: </div>
     <div signalr-subscribe="new-hb-message"> Initial Message </div>
     <div signalr-subscribe="new-hb-message2"> Initial Message </div>

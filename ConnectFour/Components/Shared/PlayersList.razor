@@ -1,6 +1,5 @@
 @using ConnectFour.Persistence
 
-
 @foreach (var (score, playerId, gameId) in Players.GetBestPlayers())
 {
     <PlayerRow Score="@score" PlayerId="@playerId" GameId="@gameId"/>

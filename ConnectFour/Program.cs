@@ -1,5 +1,7 @@
 using ConnectFour.Components;
 using ConnectFour.Components.Shared;
+using ConnectFour.Examples;
+using ConnectFour.Examples.WebSocket;
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
 using ConnectFour.Models;
@@ -21,7 +23,6 @@ builder.Services.AddSingleton<WsHubTest>();
 //hubs
 builder.Services.AddScoped<GameHub>();
 builder.Services.AddScoped<LobbyHub>();
-
 
 builder.Services.AddSingleton<PlayersContext>();
 builder.Services.AddSingleton<GamesContext>();
@@ -64,7 +65,7 @@ app.MapEndpoints<Program>();
 //What?
 app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 {
-    ctx.Response.Headers.Add("HX-Push-Url", $"game/{gameId}");
+    ctx.Response.Headers.Append("HX-Push-Url", $"game/{gameId}");
     return Results.Ok();
 });
 
@@ -87,13 +88,6 @@ app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
 });
 
 app.MapGet("refresh-board", () => new RazorComponentResult(typeof(Board)));
-
-
-app.MapGet("test-multi", async (BlazorRenderer renderer) =>
-{
-    var result = await renderer.RenderComponent<MultiSwap>();
-    return Results.Extensions.Html(result);
-});
 
 
 app.UseSwagger();
