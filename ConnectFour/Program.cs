@@ -1,5 +1,7 @@
 using ConnectFour.Components;
 using ConnectFour.Components.Shared;
+using ConnectFour.Examples;
+using ConnectFour.Examples.WebSocket;
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
 using ConnectFour.Models;
@@ -21,7 +23,6 @@ builder.Services.AddSingleton<WsHubTest>();
 //hubs
 builder.Services.AddScoped<GameHub>();
 builder.Services.AddScoped<LobbyHub>();
-
 
 builder.Services.AddSingleton<PlayersContext>();
 builder.Services.AddSingleton<GamesContext>();
@@ -62,16 +63,9 @@ app.MapEndpoints<Program>();
 
 app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 {
-    ctx.Response.Headers.Add("HX-Push-Url", $"game/{gameId}");
+    ctx.Response.Headers.Append("HX-Push-Url", $"game/{gameId}");
     return Results.Ok();
 });
-
-app.MapGet("click", async() =>
-{
-    await Task.Delay(800);
-    return Results.Ok(Guid.NewGuid().ToString());
-});
-
 
 app.MapGet("in-game-buttons", () => new RazorComponentResult(typeof(InGameButtons)));
 app.MapGet("new-game-buttons", () => new RazorComponentResult(typeof(NewGameButtons)));
@@ -94,14 +88,7 @@ app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
 app.MapGet("refresh-board", () => new RazorComponentResult(typeof(Board)));
 
 
-app.MapGet("test-multi", async (BlazorRenderer renderer) =>
-{
-    var result = await renderer.RenderComponent<MultiSwap>();
-    return Results.Extensions.Htmx(result);
-});
-
-
 app.UseSwagger();
-app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Upskill"); });
+app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Connect Four"); });
 
 app.Run();
