@@ -23,7 +23,8 @@
 - [x] (A) simplify lobby hub
 - [x] (A) fix storage override on page refresh
 - [ ] (B) fix signalR events (remove hacks)
-
+- [x] (A) replace trigger 'every 2s' with ws messages  
+ 
 ### signalr:
 - [x] (A) replace new game to resign button
 - [x] (A) handle player id instead of lobby connection in connect request
@@ -33,6 +34,7 @@
 - [x] (A) add player name
 - [ ] (A) dark mode
 - [ ] (B) hover all column
+- [ ] (B) move animation
 - [x] (B) change alert to modal
 - [x] (A) add player score to lobby and order them by most wins
 - [x] (A) shorten game ids
@@ -56,9 +58,11 @@
 - 09.11 | 100 min
 - 10.11 | 120 min
 - 11.11 | 80 min
-- 27.12 | 60+(26.12) min
+- 27.12 | 60 min
+- 01.03 | 300 min
+- 02.03 | 120 min
 
 ## SUM
-30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80
-### 2860
+30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 
+### 3340
 
