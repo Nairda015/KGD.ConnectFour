@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
-using ConnectFour.Components.Shared;
+using ConnectFour.Components.Shared.Board;
+using ConnectFour.Components.Shared.Game;
 using ConnectFour.Components.Shared.Notifications;
 using ConnectFour.Domain;
 using ConnectFour.Extensions;
@@ -54,8 +55,8 @@ public class GameHub(IHubContext<GameHub> hubContext,
     {
         var (gameId, firstPlayerId, secondPlayerId) = log;
         context.NewGame(log);
-        players.GameStarted(firstPlayerId, gameId);
-        players.GameStarted(secondPlayerId, gameId);
+        await players.GameStarted(firstPlayerId, gameId);
+        await players.GameStarted(secondPlayerId, gameId);
 
         await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId.Value, ct);
         await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId.Value, ct);
@@ -93,8 +94,13 @@ public class GameHub(IHubContext<GameHub> hubContext,
             .Group(gameId.Value)
             .SendAsync("game-completed", message);
         
-        const string refreshScoreMessage = """<div class="hidden" hx-get="/score" hx-trigger="load" hx-swap="outerHTML" hx-target="#player-score-value"></div>""";
-
+        const string refreshScoreMessage = """
+                                           <div class="hidden" 
+                                           hx-post="/score"
+                                           hx-vals="js:{playerId: sessionStorage.getItem('PlayerId')}"
+                                           hx-trigger="load"
+                                           hx-target="#player-score-value"></div>
+                                           """;
         
         await hubContext.Clients
             .Group(gameId.Value)

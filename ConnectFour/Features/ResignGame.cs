@@ -34,10 +34,10 @@ internal class ResignHandler(GamesContext gamesContext, GameHub hub, PlayersCont
         var winner = gameLog.FirstPlayerConnection.PlayerId == playerId
             ? gameLog.SecondPlayerConnection.PlayerId
             : gameLog.FirstPlayerConnection.PlayerId;
-        await hub.SendResignationMessage(gameId, winner);
         
-        players.GameEnded(winner, GameResult.Win);
-        players.GameEnded(playerId, GameResult.Lose);
+        await players.GameEnded(winner, playerId);
+        
+        await hub.SendResignationMessage(gameId, winner);
 
         return Results.Accepted();
     }

@@ -1,4 +1,4 @@
-using ConnectFour.Components.Shared;
+using ConnectFour.Components.Shared.Lobby;
 using Microsoft.AspNetCore.Http.HttpResults;
 using MiWrap;
 

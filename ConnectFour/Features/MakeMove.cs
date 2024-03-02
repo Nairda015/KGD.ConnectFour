@@ -46,8 +46,7 @@ internal class MakeMoveHandler(GamesContext gamesContext, GameHub hub, PlayersCo
             var looser = gameLog.FirstPlayerConnection.PlayerId == playerId
                 ? gameLog.SecondPlayerConnection.PlayerId
                 : gameLog.FirstPlayerConnection.PlayerId;
-            players.GameEnded(playerId, GameResult.Win);
-            players.GameEnded(looser, GameResult.Lose);
+            await players.GameEnded(playerId, looser);
             
             await hub.SendCompletedGameMessage(gameId, playerId);
         }
