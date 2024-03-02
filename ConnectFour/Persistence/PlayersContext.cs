@@ -1,19 +1,22 @@
+using System.Threading.Channels;
 using ConnectFour.Models;
 
 namespace ConnectFour.Persistence;
 
 //Update LastTimeActive only in connection events
-public class PlayersContext : Dictionary<PlayerId, Player>
+public class PlayersContext(Channel<LobbyUpdateToken> lobbyChannel) : Dictionary<PlayerId, Player>
 {
     private const int LobbyPlayersCount = 10;
-    public void PlayerConnected(PlayerId playerId)
+
+    public ValueTask PlayerConnected(PlayerId playerId)
     {
         if (TryGetValue(playerId, out var player))
         {
             player.IsActive = true;
             player.LastTimeActive = Today();
-            if (ShouldInvalidateCache(player, InvalidationScenario.KnownPlayerConnected)) InvalidateCache();
-            return;
+            return ShouldUpdateCache(player, InvalidationScenario.KnownPlayerConnected)
+                ? UpdateCache()
+                : ValueTask.CompletedTask;
         }
 
         var newPlayer = new Player
@@ -25,25 +28,43 @@ public class PlayersContext : Dictionary<PlayerId, Player>
         };
 
         Add(playerId, newPlayer);
-        if (ShouldInvalidateCache(newPlayer, InvalidationScenario.LobbyIsNotFull)) InvalidateCache();
+        return ShouldUpdateCache(newPlayer, InvalidationScenario.LobbyIsNotFull)
+            ? UpdateCache()
+            : ValueTask.CompletedTask;
     }
-    public void PlayerDisconnected(PlayerId id)
+
+    public ValueTask PlayerDisconnected(PlayerId id)
     {
         var player = this[id];
         player.IsActive = false;
-        if (ShouldInvalidateCache(player, InvalidationScenario.KnownPlayerConnected)) InvalidateCache();
+        if (ShouldUpdateCache(player, InvalidationScenario.PlayerDisconnected)) return UpdateCache();
         player.LastTimeActive = Today();
+        return ValueTask.CompletedTask;
     }
-    public void GameStarted(PlayerId playerId, GameId gameId)
+
+    public ValueTask GameStarted(PlayerId playerId, GameId gameId)
     {
         var player = this[playerId];
         player.CurrentGame = gameId;
-        if (ShouldInvalidateCache(player, InvalidationScenario.TopPlayerGameStarted)) InvalidateCache();
+        return ShouldUpdateCache(player, InvalidationScenario.PlayerGameStarted)
+            ? UpdateCache()
+            : ValueTask.CompletedTask;
     }
-    public void GameEnded(PlayerId playerId, GameResult gameResult)
-    {
-        var player = this[playerId];
 
+    public async ValueTask GameEnded(PlayerId winnerId, PlayerId loserId)
+    {
+        var winner = this[winnerId];
+        var loser = this[loserId];
+        
+        GameEnded(winner, GameResult.Win);
+        GameEnded(loser, GameResult.Lose);
+
+        if (ShouldUpdateCache(winner, InvalidationScenario.GameEnded)) await UpdateCache();
+        if (ShouldUpdateCache(loser, InvalidationScenario.GameEnded)) await UpdateCache();
+    }
+    
+    private static void GameEnded(Player player, GameResult gameResult)
+    {
         player.CurrentGame = null;
         _ = gameResult switch
         {
@@ -52,33 +73,34 @@ public class PlayersContext : Dictionary<PlayerId, Player>
             GameResult.Lose => player.Score.LogLose(),
             _ => throw new ArgumentOutOfRangeException(nameof(gameResult), gameResult, null)
         };
-
-        if (ShouldInvalidateCache(player, InvalidationScenario.GameEnded)) InvalidateCache();
     }
+
     public Score GetPlayerScore(PlayerId playerId) => ContainsKey(playerId) ? this[playerId].Score : Score.Default;
+    private List<LobbyReadModel> _cachedBestPlayers = new(LobbyPlayersCount);
+    public IEnumerable<LobbyReadModel> GetBestPlayers() => _cachedBestPlayers;
 
-    private List<LobbyReadModel>? _cachedBestPlayers;
-    public IEnumerable<LobbyReadModel> GetBestPlayers() => _cachedBestPlayers ??= Values
-        .Where(x => x.IsActive)
-        .OrderByDescending(x => x.Score.Wins)
-        .Take(LobbyPlayersCount)
-        .Select(x => new LobbyReadModel(x.Score, x.Id, x.CurrentGame))
-        .ToList();
-    private bool ShouldInvalidateCache(Player player, InvalidationScenario scenario)
+    private bool ShouldUpdateCache(Player player, InvalidationScenario scenario) => scenario switch
     {
-        if(_cachedBestPlayers is null || Count is 0) return false;
-        if (_cachedBestPlayers.Count < LobbyPlayersCount) return true;
-        return scenario switch
-        {
-            InvalidationScenario.KnownPlayerConnected => player.Score.Wins > _cachedBestPlayers.Last().Score.Wins,
-            InvalidationScenario.GameEnded => player.Score.Wins > _cachedBestPlayers.Last().Score.Wins,
-            InvalidationScenario.TopPlayerDisconnected => _cachedBestPlayers.Any(x => x.PlayerId == player.Id),
-            InvalidationScenario.TopPlayerGameStarted => _cachedBestPlayers.Any(x => x.PlayerId == player.Id),
-            InvalidationScenario.LobbyIsNotFull => _cachedBestPlayers?.Count < LobbyPlayersCount,
-            _ => throw new ArgumentOutOfRangeException(nameof(scenario), scenario, null)
-        };
+        InvalidationScenario.KnownPlayerConnected => _cachedBestPlayers.Any(x => x.Score.Wins <= player.Score.Wins),
+        InvalidationScenario.GameEnded => _cachedBestPlayers.Any(x => x.Score.Wins <= player.Score.Wins),
+        InvalidationScenario.PlayerDisconnected => _cachedBestPlayers.Any(x => x.PlayerId == player.Id),
+        InvalidationScenario.PlayerGameStarted => _cachedBestPlayers.Any(x => x.PlayerId == player.Id),
+        InvalidationScenario.LobbyIsNotFull => _cachedBestPlayers.Count < LobbyPlayersCount,
+        _ => throw new ArgumentOutOfRangeException(nameof(scenario), scenario, null)
+    };
+
+    private ValueTask UpdateCache()
+    {
+        _cachedBestPlayers = Values
+            .Where(x => x.IsActive)
+            .OrderByDescending(x => x.Score.Wins)
+            .Take(LobbyPlayersCount)
+            .Select(x => new LobbyReadModel(x.Score, x.Id, x.CurrentGame))
+            .ToList();
+
+        return lobbyChannel.Writer.WriteAsync(new LobbyUpdateToken());
     }
-    private void InvalidateCache() => _cachedBestPlayers = null;
+
     private static DateOnly Today() => DateOnly.FromDateTime(DateTime.Today);
 }
 
@@ -104,14 +126,16 @@ public enum InvalidationScenario
 {
     KnownPlayerConnected = 0,
     GameEnded = 1,
-    TopPlayerDisconnected = 2,
-    TopPlayerGameStarted = 3,
+    PlayerDisconnected = 2,
+    PlayerGameStarted = 3,
     LobbyIsNotFull = 4,
 }
 
+public struct LobbyUpdateToken;
+
 public class Score
 {
-    public static Score Default = new();
+    public static readonly Score Default = new();
     public int Wins { get; private set; }
     public int Draws { get; private set; }
     public int Losses { get; private set; }

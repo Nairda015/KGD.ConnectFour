@@ -18,7 +18,7 @@ internal class MultiSwapHandler(BlazorRenderer renderer) : IHttpCommandHandler<M
 {
     public async Task<IResult> HandleAsync(MultiSwapCommand command, CancellationToken cancellationToken = default)
     {
-        var result = await renderer.RenderComponent<MultiSwap>();
-        return Results.Extensions.Htmx(result);
+        var result = await renderer.RenderComponent<MultiSwapComponent>();
+        return Results.Extensions.Html(result);
     }
 }

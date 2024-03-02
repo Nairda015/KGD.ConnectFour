@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
-using ConnectFour.Components.Shared;
+using ConnectFour.Components.Shared.Board;
+using ConnectFour.Components.Shared.Game;
 using ConnectFour.Components.Shared.Notifications;
 using ConnectFour.Domain;
 using ConnectFour.Extensions;
@@ -14,20 +15,25 @@ public record NewGameMessage(string PlayerId);
 public class GameHub(IHubContext<GameHub> hubContext,
     GamesContext context,
     PlayersContext players,
-    BlazorRenderer renderer) : Hub
+    BlazorRenderer renderer,
+    ILogger<GameHub> logger) : Hub
 {
     private static readonly ConcurrentQueue<PlayerConnection> UsersQueue = new();
 
     public async Task NewGame(NewGameMessage message)
     {
-        var conn = new ConnectionId(Context.ConnectionId);
-        var userId = new PlayerId(message.PlayerId);
+        var connectionId = new ConnectionId(Context.ConnectionId);
+        var playerId = new PlayerId(message.PlayerId);
+        var playerConnection = new PlayerConnection(playerId, connectionId);
+        
+        logger.LogDebug("Player with id {PlayerId} requested new game", playerId);
+        logger.LogDebug("Game hub connection id for {PlayerId} is {ConnectionId}", playerId, connectionId);
         
         if (UsersQueue.IsEmpty)
         {
-            UsersQueue.Enqueue(new PlayerConnection(userId, conn));
+            UsersQueue.Enqueue(playerConnection);
             await hubContext.Clients
-                .Client(conn)
+                .Client(connectionId)
                 .SendAsync("show-indicator", await renderer.RenderComponent<Indicator>());
             return;
         }
@@ -38,7 +44,7 @@ public class GameHub(IHubContext<GameHub> hubContext,
         var log = new GameLog
         {
             GameId = GameId.Create(),
-            FirstPlayerConnection = new PlayerConnection(userId, conn),
+            FirstPlayerConnection = playerConnection,
             SecondPlayerConnection = secondUser,
         };
 
@@ -49,8 +55,8 @@ public class GameHub(IHubContext<GameHub> hubContext,
     {
         var (gameId, firstPlayerId, secondPlayerId) = log;
         context.NewGame(log);
-        players.GameStarted(firstPlayerId, gameId);
-        players.GameStarted(secondPlayerId, gameId);
+        await players.GameStarted(firstPlayerId, gameId);
+        await players.GameStarted(secondPlayerId, gameId);
 
         await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId.Value, ct);
         await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId.Value, ct);
@@ -71,18 +77,34 @@ public class GameHub(IHubContext<GameHub> hubContext,
     {
         var message = await renderer.RenderComponent<GameCompletedMessage>(
             new Dictionary<string, object?> {{nameof(GameCompletedMessage.PlayerId), winnerId}});
-        await hubContext.Clients
-            .Group(gameId.Value)
-            .SendAsync("game-completed", message);
+        
+        await SendGameCompletedMessage(gameId, message);
     }
 
     public async Task SendResignationMessage(GameId gameId, PlayerId winnerId)
     {
         var message = await renderer.RenderComponent<ResignationMessage>(
             new Dictionary<string, object?> {{nameof(ResignationMessage.PlayerId), winnerId}});
+        await SendGameCompletedMessage(gameId, message);
+    }
+
+    private async Task SendGameCompletedMessage(GameId gameId, string message)
+    {
         await hubContext.Clients
             .Group(gameId.Value)
             .SendAsync("game-completed", message);
+        
+        const string refreshScoreMessage = """
+                                           <div class="hidden" 
+                                           hx-post="/score"
+                                           hx-vals="js:{playerId: sessionStorage.getItem('PlayerId')}"
+                                           hx-trigger="load"
+                                           hx-target="#player-score-value"></div>
+                                           """;
+        
+        await hubContext.Clients
+            .Group(gameId.Value)
+            .SendAsync("player-score-updated", refreshScoreMessage);
     }
 
     public async Task MarkMove(GameLog log, Position movePosition, CancellationToken ct)
@@ -94,5 +116,9 @@ public class GameHub(IHubContext<GameHub> hubContext,
         await hubContext.Clients
             .Group(log.GameId.Value)
             .SendAsync($"mark-move-{movePosition.Row}-{movePosition.Column}", message, ct);
+        
+        await hubContext.Clients
+            .Group(log.GameId.Value)
+            .SendAsync("current-player", log.GetCurrentPlayerId, ct);
     }
 }

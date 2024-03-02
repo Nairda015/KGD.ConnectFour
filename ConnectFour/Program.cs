@@ -1,6 +1,7 @@
+using System.Threading.Channels;
 using ConnectFour.Components;
-using ConnectFour.Components.Shared;
-using ConnectFour.Examples;
+using ConnectFour.Components.Shared.Game;
+using ConnectFour.Components.Shared.Board;
 using ConnectFour.Examples.WebSocket;
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
@@ -16,13 +17,17 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+//channels
+builder.Services.AddSingleton(Channel.CreateUnbounded<LobbyUpdateToken>());
+builder.Services.AddHostedService<LobbyUpdateConsumer>();
+
 //ws test
 builder.Services.AddHostedService<BackgroundPublisher>();
 builder.Services.AddSingleton<WsHubTest>();
 
 //hubs
-builder.Services.AddScoped<GameHub>();
-builder.Services.AddScoped<LobbyHub>();
+builder.Services.AddTransient<GameHub>();
+builder.Services.AddTransient<LobbyHub>();
 
 builder.Services.AddSingleton<PlayersContext>();
 builder.Services.AddSingleton<GamesContext>();
@@ -30,8 +35,8 @@ builder.Services.AddSingleton<GamesContext>();
 builder.Services.RegisterHandlers<Program>();
 
 //razor to string rendering 
-builder.Services.AddScoped<HtmlRenderer>();
-builder.Services.AddScoped<BlazorRenderer>();
+builder.Services.AddTransient<HtmlRenderer>();
+builder.Services.AddTransient<BlazorRenderer>();
 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -51,16 +56,18 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseAntiforgery();
-
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapHub<GameHub>("/game-hub");
 app.MapHub<WsHubTest>("/ws-hub");
 app.MapHub<LobbyHub>("/lobby-hub");
 
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
 app.MapEndpoints<Program>();
 
 
+//What?
 app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 {
     ctx.Response.Headers.Append("HX-Push-Url", $"game/{gameId}");
@@ -69,7 +76,6 @@ app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 
 app.MapGet("in-game-buttons", () => new RazorComponentResult(typeof(InGameButtons)));
 app.MapGet("new-game-buttons", () => new RazorComponentResult(typeof(NewGameButtons)));
-app.MapGet("score/{playerId}", (PlayerId playerId, PlayersContext ctx) => ctx.GetPlayerScore(playerId).ToString());
 
 app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
 {

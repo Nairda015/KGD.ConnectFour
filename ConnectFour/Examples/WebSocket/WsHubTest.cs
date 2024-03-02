@@ -33,7 +33,7 @@ public class WsHubTest(IHubContext<WsHubTest> hubContext) : Hub
         
         var random = Random.Shared.Next();
 
-        if (random %2 == 0)
+        if (random % 2 == 0)
         {
             var message = $"""<div class="bg-red-200">{random}</div>""";
             await hubContext.Clients.All.SendAsync("new-hb-message", message, ct);

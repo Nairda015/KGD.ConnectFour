@@ -1,4 +1,4 @@
-using ConnectFour.Components.Shared;
+using ConnectFour.Components.Shared.Lobby;
 using Microsoft.AspNetCore.Http.HttpResults;
 using MiWrap;
 
@@ -6,19 +6,17 @@ namespace ConnectFour.Features;
 
 internal record RefreshLobby : IHttpQuery;
 
-public class LobbyQueueEndpoint : IEndpoint
+public class RefreshLobbyEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder builder) =>
-        builder.MapGet<RefreshLobby, LobbyQueueHandler>("refresh-lobby")
+        builder.MapGet<RefreshLobby, RefreshLobbyHandler>("refresh-lobby")
             .Produces(200)
             .Produces(400)
             .DisableAntiforgery();
 }
 
-internal class LobbyQueueHandler : IHttpQueryHandler<RefreshLobby>
+internal class RefreshLobbyHandler : IHttpQueryHandler<RefreshLobby>
 {
     public async Task<IResult> HandleAsync(RefreshLobby command, CancellationToken cancellationToken = default)
-    {
-        return new RazorComponentResult(typeof(PlayersList));
-    }
+        => new RazorComponentResult(typeof(PlayersList));
 }

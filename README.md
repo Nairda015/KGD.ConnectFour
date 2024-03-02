@@ -38,6 +38,9 @@
 - [x] (A) shorten game ids
 - [x] (A) update colors
 
+### bugs:
+- [ ] (B) sometimes it will throw that player don't exist
+
 
 # TIME SPENT ON THIS PROJECT:
 - 25.10 | 30 min
@@ -53,6 +56,7 @@
 - 09.11 | 100 min
 - 10.11 | 120 min
 - 11.11 | 80 min
+- 27.12 | 60+(26.12) min
 
 ## SUM
 30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80

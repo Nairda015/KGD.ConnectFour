@@ -1,8 +1,10 @@
 ﻿@page "/"
-@using ConnectFour.Components.Shared
+@using ConnectFour.Components.Shared.Board
+@using ConnectFour.Components.Shared.Lobby
+@using ConnectFour.Components.Shared.Game
 @using ConnectFour.Models
 
-<div id="game" hx-ext="signalr" signalr-connect="/game-hub">
+<div id="game" signalr-connect="/game-hub">
     <PlayerLabel PlayerId="@_playerId"/>
     <PlayerScore PlayerId="@_playerId"/>
     <Board/>
@@ -31,9 +33,9 @@
     let playerNameDiv = document.getElementById("playerIdValue");
     playerNameDiv.innerText = playerId;
     
-    let playerScoreDiv = document.getElementById("player-score-value");
-    let hxGetAttribute = playerScoreDiv.getAttribute("signalr-connect");
-    playerScoreDiv.setAttribute("hx-get", `/score/${playerId}`);
+    // let playerScoreDiv = document.getElementById("player-score-value");
+    // let hxGetAttribute = playerScoreDiv.getAttribute("signalr-connect");
+    // playerScoreDiv.setAttribute("hx-get", `/score/${playerId}`);
     
     let lobbyConnectionDiv = document.getElementById("lobby-connection");
     let signalrConnectAttribute = lobbyConnectionDiv.getAttribute("signalr-connect");
