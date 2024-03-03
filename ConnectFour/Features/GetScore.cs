@@ -1,8 +1,6 @@
-using ConnectFour.Components.Shared.Lobby;
 using ConnectFour.Extensions;
 using ConnectFour.Models;
 using ConnectFour.Persistence;
-using Microsoft.AspNetCore.Http.HttpResults;
 using MiWrap;
 
 namespace ConnectFour.Features;

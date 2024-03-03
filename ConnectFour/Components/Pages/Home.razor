@@ -6,7 +6,7 @@
 
 <div id="game" signalr-connect="/game-hub">
     <PlayerLabel PlayerId="@_playerId"/>
-    <PlayerScore PlayerId="@_playerId"/>
+    <PlayerScore/>
     <Board/>
     <NewGameButtons/>
 
@@ -32,13 +32,8 @@
     
     let playerNameDiv = document.getElementById("playerIdValue");
     playerNameDiv.innerText = playerId;
-    
-    // let playerScoreDiv = document.getElementById("player-score-value");
-    // let hxGetAttribute = playerScoreDiv.getAttribute("signalr-connect");
-    // playerScoreDiv.setAttribute("hx-get", `/score/${playerId}`);
-    
+   
     let lobbyConnectionDiv = document.getElementById("lobby-connection");
-    let signalrConnectAttribute = lobbyConnectionDiv.getAttribute("signalr-connect");
     lobbyConnectionDiv.setAttribute("signalr-connect", `/lobby-hub?playerId=${playerId}`);
 
     let dialog = document.querySelector("#notification_dialog");
