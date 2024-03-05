@@ -1,11 +1,10 @@
 <div id="player-score" class="w-full px-4 py-2 text-center max-w-md mx-auto">
     <div id="player-score-value"
          class="text-2xl nm-hole rounded py-2"
+         signalr-subscribe="player-score-updated"
          hx-post="/score"
          hx-vals="js:{playerId: sessionStorage.getItem('PlayerId')}"
-         hx-trigger="load">
+         hx-trigger="load, htmx:signalr:message from:body">
         0 / 0 / 0
     </div>
-    
-    <div id="player-score-updated-hack" signalr-subscribe="player-score-updated"></div>
 </div>

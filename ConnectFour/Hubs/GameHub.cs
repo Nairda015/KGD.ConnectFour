@@ -94,17 +94,9 @@ public class GameHub(IHubContext<GameHub> hubContext,
             .Group(gameId.Value)
             .SendAsync("game-completed", message);
         
-        const string refreshScoreMessage = """
-                                           <div class="hidden" 
-                                           hx-post="/score"
-                                           hx-vals="js:{playerId: sessionStorage.getItem('PlayerId')}"
-                                           hx-trigger="load"
-                                           hx-target="#player-score-value"></div>
-                                           """;
-        
         await hubContext.Clients
             .Group(gameId.Value)
-            .SendAsync("player-score-updated", refreshScoreMessage);
+            .SendAsync("player-score-updated");
     }
 
     public async Task MarkMove(GameLog log, Position movePosition, CancellationToken ct)
