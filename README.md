@@ -25,7 +25,8 @@
 - [x] (B) fix signalR events (remove hacks)
 - [x] (A) replace trigger 'every 2s' with ws messages  
 - [ ] (A) move new game flow to rest requests
-- [ ] (A) move from dictionaries to memory cache or db  
+- [ ] (A) move from dictionaries to memory cache or db
+- [ ] (A) move mark move flow to signalR  
  
 ### signalr:
 - [x] (A) replace new game to resign button
