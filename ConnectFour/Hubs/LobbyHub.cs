@@ -31,15 +31,12 @@ public class LobbyHub(PlayersContext players, ILogger<LobbyHub> logger) : Hub
 
 public class LobbyUpdateConsumer(Channel<LobbyUpdateToken> channel, IHubContext<LobbyHub> hubContext) : BackgroundService
 {
-    //TODO: HACKS!!!
-    private const string Message = """<div class="hidden" hx-get="/refresh-lobby" hx-trigger="load" hx-target="#lobby-table-body"></div>""";
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!channel.Reader.Completion.IsCompleted && await channel.Reader.WaitToReadAsync(stoppingToken))
         {
             if (!channel.Reader.TryRead(out _)) continue;
-            await hubContext.Clients.All.SendAsync("lobby-updated", Message, stoppingToken);
+            await hubContext.Clients.All.SendAsync("lobby-updated", stoppingToken);
         }
     }
 }

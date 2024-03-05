@@ -200,6 +200,7 @@ by bigskysoftware.
 				});
 
 				var swapSpec = api.getSwapSpecification(elt);
+				if (!message) return; 
 				api.selectAndSwap(swapSpec.swapStyle, messageSpec.target, elt, messageSpec.message, settleInfo);
 				settleInfo.elts.forEach(function (elt) {
 					if (elt.classList) {

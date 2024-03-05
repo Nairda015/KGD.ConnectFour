@@ -9,12 +9,10 @@
             </tr>
             </thead>
             <tbody
-                id="lobby-table-body"
+                signalr-subscribe="lobby-updated"
                 hx-get="/refresh-lobby"
-                hx-trigger="load">
+                hx-trigger="load delay:200ms, htmx:signalr:message from:body throttle:1s">
             </tbody>
         </table>
-        
-        <div id="lobby-updated-hack" signalr-subscribe="lobby-updated"></div>
     </div>
 </div>

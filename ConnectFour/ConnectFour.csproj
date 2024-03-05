@@ -9,20 +9,20 @@
 
     <ItemGroup>
         <!-- from blog -->
-        <PackageReference Include="Htmx" Version="0.0.12"/>
-        <PackageReference Include="Htmx.TagHelpers" Version="0.0.12"/>
+        <PackageReference Include="Htmx" Version="1.7.0" />
+        <PackageReference Include="Htmx.TagHelpers" Version="1.7.0" />
     </ItemGroup>
 
 
     <ItemGroup>
         <!--Manual-->
-        <PackageReference Include="JetBrains.Annotations" Version="2023.2.0"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
     </ItemGroup>
 
 
     <ItemGroup>
-        <PackageReference Include="Bogus" Version="34.0.2" />
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
+        <PackageReference Include="Bogus" Version="35.4.1" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.4.0" />
         
         <PackageReference Include="MiWrap" Version="1.0.0"/>
 
