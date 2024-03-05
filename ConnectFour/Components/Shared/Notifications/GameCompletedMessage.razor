@@ -1,15 +1,9 @@
 @using ConnectFour.Models
 
-<div class="hidden" hx-get="/new-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#in-game-buttons"></div>
 <div class="p-1 mb-2 pt-0">Player @PlayerId.ToString() won!</div>
 
 <script>
 notification_dialog.showModal();
 </script>
 
-@code {
-
-    [Parameter]
-    public required PlayerId PlayerId { get; set; }
-
-}
+@code { [Parameter] public required PlayerId PlayerId { get; set; } }

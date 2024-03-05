@@ -67,15 +67,12 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapEndpoints<Program>();
 
 
-//What?
+//TODO: this is hack because there is no support for htmx headers in signalr
 app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 {
     ctx.Response.Headers.Append("HX-Push-Url", $"game/{gameId}");
     return Results.Ok();
 });
-
-app.MapGet("in-game-buttons", () => new RazorComponentResult(typeof(InGameButtons)));
-app.MapGet("new-game-buttons", () => new RazorComponentResult(typeof(NewGameButtons)));
 
 app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
 {

@@ -8,15 +8,27 @@
     <PlayerLabel PlayerId="@_playerId"/>
     <PlayerScore/>
     <Board/>
-    <NewGameButtons/>
+    
+    <div id="control-panel">
+        <div signalr-subscribe="refresh-control-panel"
+             hx-trigger="htmx:signalr:message"
+             hx-get="/refresh-control-panel"
+             hx-vals="js:{playerId: sessionStorage.getItem('PlayerId')}"
+             hx-target="#control-panel-buttons">
+        </div>
+        <div id="control-panel-buttons" hx-disabled-elt="this">
+            <NewGameButtons/>
+        </div>
+        
+    </div>
 
     <div id="new-game-hack" signalr-subscribe="game-started"></div>
-    
+
     <dialog id="notification_dialog" class="bg-[#e5e5e5] px-4 py-4 rounded max-w-md text-center">
         <div id="game-completed-hack" signalr-subscribe="game-completed" class="p-1 mb-2 pt-0"></div>
         <button autofocus class="p-1 mb-1 w-[40%] nm-hole rounded">OK</button>
     </dialog>
-    
+
 </div>
 
 <Lobby/>

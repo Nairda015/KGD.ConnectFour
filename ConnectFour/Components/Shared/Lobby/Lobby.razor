@@ -11,7 +11,7 @@
             <tbody
                 signalr-subscribe="lobby-updated"
                 hx-get="/refresh-lobby"
-                hx-trigger="load delay:200ms, htmx:signalr:message from:body throttle:1s">
+                hx-trigger="htmx:signalr:message throttle:1s">
             </tbody>
         </table>
     </div>

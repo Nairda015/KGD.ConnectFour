@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using ConnectFour.Components.Shared.Board;
 using ConnectFour.Components.Shared.Game;
 using ConnectFour.Components.Shared.Notifications;
@@ -12,13 +11,14 @@ namespace ConnectFour.Hubs;
 
 public record NewGameMessage(string PlayerId);
 
+//TODO: Remove from queue after connection lost 
 public class GameHub(IHubContext<GameHub> hubContext,
     GamesContext context,
     PlayersContext players,
     BlazorRenderer renderer,
     ILogger<GameHub> logger) : Hub
 {
-    private static readonly ConcurrentQueue<PlayerConnection> UsersQueue = new();
+    private static readonly SortedSet<PlayerConnection> UsersSet = new(new PlayerConnectionComparer());
 
     public async Task NewGame(NewGameMessage message)
     {
@@ -29,18 +29,21 @@ public class GameHub(IHubContext<GameHub> hubContext,
         logger.LogDebug("Player with id {PlayerId} requested new game", playerId);
         logger.LogDebug("Game hub connection id for {PlayerId} is {ConnectionId}", playerId, connectionId);
         
-        if (UsersQueue.IsEmpty)
+        if (UsersSet.Count is 0)
         {
-            UsersQueue.Enqueue(playerConnection);
+            UsersSet.Add(playerConnection);
             await hubContext.Clients
                 .Client(connectionId)
                 .SendAsync("show-indicator", await renderer.RenderComponent<Indicator>());
             return;
         }
 
-        //TODO: is this good idea?
-        if (!UsersQueue.TryDequeue(out var secondUser)) return;
+        //TODO: is this good idea? (multithreading)
+        var secondUser = UsersSet.Min;
+        if (secondUser is null) return;
 
+        UsersSet.Remove(secondUser);
+        
         var log = new GameLog
         {
             GameId = GameId.Create(),
@@ -63,14 +66,18 @@ public class GameHub(IHubContext<GameHub> hubContext,
 
         //TODO: HACKS!!!
         var message = $"""
-                       <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
-                       <div class="hidden" hx-get="/in-game-buttons" hx-trigger="load" hx-swap="outerHTML" hx-target="#new-game-buttons"></div>
-                       <div class="hidden" hx-get="/refresh-board" hx-trigger="load" hx-swap="outerHTML" hx-target="#board"></div>
                        <script>sessionStorage.setItem("GameId", "{log.GameId.ToString()}");</script>
+                       <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
+                       <div class="hidden" hx-get="/refresh-board" hx-trigger="load" hx-swap="outerHTML" hx-target="#board"></div>
                        """;
+        
         await hubContext.Clients
             .Group(log.GameId.Value)
             .SendAsync("game-started", message, ct);
+        
+        await hubContext.Clients
+            .Group(log.GameId.Value)
+            .SendAsync("refresh-control-panel", ct);
     }
 
     public async Task SendCompletedGameMessage(GameId gameId, PlayerId winnerId)
@@ -78,27 +85,16 @@ public class GameHub(IHubContext<GameHub> hubContext,
         var message = await renderer.RenderComponent<GameCompletedMessage>(
             new Dictionary<string, object?> {{nameof(GameCompletedMessage.PlayerId), winnerId}});
         
-        await SendGameCompletedMessage(gameId, message);
+        await NotifyAboutGameEnd(gameId, message);
     }
 
     public async Task SendResignationMessage(GameId gameId, PlayerId winnerId)
     {
         var message = await renderer.RenderComponent<ResignationMessage>(
             new Dictionary<string, object?> {{nameof(ResignationMessage.PlayerId), winnerId}});
-        await SendGameCompletedMessage(gameId, message);
+        await NotifyAboutGameEnd(gameId, message);
     }
-
-    private async Task SendGameCompletedMessage(GameId gameId, string message)
-    {
-        await hubContext.Clients
-            .Group(gameId.Value)
-            .SendAsync("game-completed", message);
-        
-        await hubContext.Clients
-            .Group(gameId.Value)
-            .SendAsync("player-score-updated");
-    }
-
+    
     public async Task MarkMove(GameLog log, Position movePosition, CancellationToken ct)
     {
         var colour = log.CurrentPlayerColor.ToString().ToLower();
@@ -112,5 +108,37 @@ public class GameHub(IHubContext<GameHub> hubContext,
         await hubContext.Clients
             .Group(log.GameId.Value)
             .SendAsync("current-player", log.GetCurrentPlayerId, ct);
+    }
+    
+    private async Task NotifyAboutGameEnd(GameId gameId, string message)
+    {
+        await hubContext.Clients
+            .Group(gameId.Value)
+            .SendAsync("game-completed", message);
+        
+        await hubContext.Clients
+            .Group(gameId.Value)
+            .SendAsync("player-score-updated");
+        
+        await hubContext.Clients
+            .Group(gameId.Value)
+            .SendAsync("refresh-control-panel");
+    }
+    
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        var user = UsersSet.FirstOrDefault(x => x.Connection == Context.ConnectionId);
+        if (user is null) return;
+        UsersSet.Remove(user);
+        await base.OnDisconnectedAsync(exception);
+    }
+}
+
+class PlayerConnectionComparer : IComparer<PlayerConnection>
+{
+    public int Compare(PlayerConnection? x, PlayerConnection? y)
+    {
+        if (x is null || y is null) throw new ArgumentNullException();
+        return x.ConnectionTime.CompareTo(y.ConnectionTime);
     }
 }
