@@ -63,17 +63,14 @@ public class GameHub(IHubContext<GameHub> hubContext,
 
         await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId.Value, ct);
         await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId.Value, ct);
-
-        //TODO: HACKS!!!
-        var message = $"""
-                       <script>sessionStorage.setItem("GameId", "{log.GameId.ToString()}");</script>
-                       <div class="hidden" hx-get="/game-url/{log.GameId.ToString()}" hx-trigger="load"></div>
-                       <div class="hidden" hx-get="/refresh-board" hx-trigger="load" hx-swap="outerHTML" hx-target="#board"></div>
-                       """;
         
         await hubContext.Clients
             .Group(log.GameId.Value)
-            .SendAsync("game-started", message, ct);
+            .SendAsync("update-url", new { gameId = log.GameId.ToString() }, ct);
+        
+        await hubContext.Clients
+            .Group(log.GameId.Value)
+            .SendAsync("game-started", ct);
         
         await hubContext.Clients
             .Group(log.GameId.Value)

@@ -22,13 +22,15 @@
 - [x] (A) lobby update - cache and cache invalidation
 - [x] (A) simplify lobby hub
 - [x] (A) fix storage override on page refresh
-- [ ] (B) fix signalR events (remove hacks)
+- [x] (B) fix signalR events (remove hacks)
 - [x] (A) replace trigger 'every 2s' with ws messages  
+- [ ] (A) move new game flow to rest requests
+- [ ] (A) move from dictionaries to memory cache or db  
  
 ### signalr:
 - [x] (A) replace new game to resign button
 - [x] (A) handle player id instead of lobby connection in connect request
-- [x] (A) update score
+- [x] (A) update score  
 
 ### ui:
 - [x] (A) add player name
@@ -62,8 +64,10 @@
 - 01.03 | 300 min
 - 02.03 | 120 min
 - 03.03 | 70 min
+- 04.03 | 160 min
+- 05.03 | 330 min
 
 ## SUM
-30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 + 70 
-### 3410
+30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 + 70 + 160 + 330 
+### 3900
 

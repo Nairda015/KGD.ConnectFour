@@ -1,6 +1,5 @@
 using System.Threading.Channels;
 using ConnectFour.Components;
-using ConnectFour.Components.Shared.Game;
 using ConnectFour.Components.Shared.Board;
 using ConnectFour.Examples.WebSocket;
 using ConnectFour.Extensions;
@@ -67,7 +66,7 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapEndpoints<Program>();
 
 
-//TODO: this is hack because there is no support for htmx headers in signalr
+//TODO: This is hack because there is no support for htmx headers in signalr
 app.MapGet("game-url/{gameId}", (HttpContext ctx, string gameId) =>
 {
     ctx.Response.Headers.Append("HX-Push-Url", $"game/{gameId}");
