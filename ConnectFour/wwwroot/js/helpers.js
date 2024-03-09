@@ -1,0 +1,1 @@
+function getGameIdFromPath() { return location.pathname.split("/").pop(); }

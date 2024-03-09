@@ -45,6 +45,7 @@
 
 ### bugs:
 - [ ] (B) sometimes it will throw that player don't exist
+- [ ] (A) refresh while game is still on going returns empty page (handle game search and replace dropped connections in group)
 
 
 # TIME SPENT ON THIS PROJECT:
@@ -67,8 +68,11 @@
 - 03.03 | 70 min
 - 04.03 | 160 min
 - 05.03 | 330 min
+- 08.03 | 30 min
+- 09.03 | 180 min
+- 10.03 | 30 min
 
 ## SUM
-30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 + 70 + 160 + 330 
-### 3900
+30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 + 70 + 160 + 330 + 30 + 180 + 30
+### 4140
 

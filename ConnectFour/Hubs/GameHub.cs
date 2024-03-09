@@ -4,31 +4,31 @@ using ConnectFour.Components.Shared.Notifications;
 using ConnectFour.Domain;
 using ConnectFour.Extensions;
 using ConnectFour.Models;
-using ConnectFour.Persistence;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ConnectFour.Hubs;
 
-public record NewGameMessage(string PlayerId);
-
-//TODO: Remove from queue after connection lost 
 public class GameHub(IHubContext<GameHub> hubContext, BlazorRenderer renderer) : Hub
 {
-    private static readonly SortedSet<PlayerConnection> UsersSet = new(new PlayerConnectionComparer());
+    private static readonly SortedSet<PlayerConnection> UsersQueue = new(new PlayerConnectionComparer());
     private static readonly Dictionary<PlayerId, ConnectionId> ConnectedPlayers = new();
+
     public static PlayerConnection GetPlayerConnection(PlayerId playerId) => new(playerId, ConnectedPlayers[playerId]);
     public static PlayerConnection? FindOpponent()
     {
-        var user = UsersSet.Min;
+        var user = UsersQueue.Min;
         if (user is null) return null;
 
-        UsersSet.Remove(user);
+        UsersQueue.Remove(user);
         return user;
     }
 
+    public bool CheckIfInTheQueue(PlayerId playerId) 
+        => UsersQueue.FirstOrDefault(x => x.PlayerId == playerId) is not null;
+
     public async Task AddPlayerToQueue(PlayerConnection connection)
     {
-        UsersSet.Add(connection);
+        UsersQueue.Add(connection);
         await hubContext.Clients
             .Client(connection.Connection)
             .SendAsync("show-indicator", await renderer.RenderComponent<Indicator>());
@@ -74,7 +74,7 @@ public class GameHub(IHubContext<GameHub> hubContext, BlazorRenderer renderer) :
     {
         await hubContext.Clients
             .Group(gameId)
-            .SendAsync("game-started", ct);
+            .SendAsync("refresh-board", ct);
         
         await hubContext.Clients
             .Group(gameId)
@@ -101,16 +101,19 @@ public class GameHub(IHubContext<GameHub> hubContext, BlazorRenderer renderer) :
         var ctx = Context.GetHttpContext()!;
         var queryString = ctx.Request.Query["playerId"].ToString();
         var playerId = new PlayerId(queryString);
-        ConnectedPlayers.Add(playerId, new ConnectionId(Context.ConnectionId));
+        var added = ConnectedPlayers.TryAdd(playerId, new ConnectionId(Context.ConnectionId));
+        if (!added) ConnectedPlayers[playerId] = new ConnectionId(Context.ConnectionId);
         await base.OnConnectedAsync();
     }
     
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var user = UsersSet.FirstOrDefault(x => x.Connection == Context.ConnectionId);
-        if (user is null) return;
-        UsersSet.Remove(user);
-        ConnectedPlayers.Remove(user.PlayerId);
+        var user = UsersQueue.FirstOrDefault(x => x.Connection == Context.ConnectionId);
+        if (user is not null)
+        {
+            UsersQueue.Remove(user);
+            ConnectedPlayers.Remove(user.PlayerId);
+        }
         await base.OnDisconnectedAsync(exception);
     }
 }

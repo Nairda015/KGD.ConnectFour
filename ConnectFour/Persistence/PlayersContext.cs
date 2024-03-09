@@ -8,7 +8,10 @@ namespace ConnectFour.Persistence;
 public class PlayersContext(Channel<LobbyUpdateToken> lobbyChannel) : Dictionary<PlayerId, Player>
 {
     private const int LobbyPlayersCount = 10;
-
+    private List<LobbyReadModel> _cachedBestPlayers = new(LobbyPlayersCount);
+    public IEnumerable<LobbyReadModel> GetBestPlayers() => _cachedBestPlayers;
+    public Score GetPlayerScore(PlayerId playerId) => ContainsKey(playerId) ? this[playerId].Score : Score.Default;
+    
     public ValueTask PlayerConnected(PlayerId playerId)
     {
         if (TryGetValue(playerId, out var player))
@@ -83,19 +86,19 @@ public class PlayersContext(Channel<LobbyUpdateToken> lobbyChannel) : Dictionary
         };
     }
 
-    public Score GetPlayerScore(PlayerId playerId) => ContainsKey(playerId) ? this[playerId].Score : Score.Default;
-    private List<LobbyReadModel> _cachedBestPlayers = new(LobbyPlayersCount);
-    public IEnumerable<LobbyReadModel> GetBestPlayers() => _cachedBestPlayers;
-
-    private bool ShouldUpdateCache(Player player, InvalidationScenario scenario) => scenario switch
+    private bool ShouldUpdateCache(Player player, InvalidationScenario scenario)
     {
-        InvalidationScenario.KnownPlayerConnected => _cachedBestPlayers.Any(x => x.Score.Wins <= player.Score.Wins),
-        InvalidationScenario.GameEnded => _cachedBestPlayers.Any(x => x.Score.Wins <= player.Score.Wins),
-        InvalidationScenario.PlayerDisconnected => _cachedBestPlayers.Any(x => x.PlayerId == player.Id),
-        InvalidationScenario.PlayerGameStarted => _cachedBestPlayers.Any(x => x.PlayerId == player.Id),
-        InvalidationScenario.LobbyIsNotFull => _cachedBestPlayers.Count < LobbyPlayersCount,
-        _ => throw new ArgumentOutOfRangeException(nameof(scenario), scenario, null)
-    };
+        if (_cachedBestPlayers.Count < LobbyPlayersCount) return true;
+        return scenario switch
+        {
+            InvalidationScenario.KnownPlayerConnected => _cachedBestPlayers.Any(x => x.Score.Wins <= player.Score.Wins),
+            InvalidationScenario.GameEnded => _cachedBestPlayers.Any(x => x.Score.Wins <= player.Score.Wins),
+            InvalidationScenario.PlayerDisconnected => _cachedBestPlayers.Any(x => x.PlayerId == player.Id),
+            InvalidationScenario.PlayerGameStarted => _cachedBestPlayers.Any(x => x.PlayerId == player.Id),
+            InvalidationScenario.LobbyIsNotFull => _cachedBestPlayers.Count < LobbyPlayersCount,
+            _ => throw new ArgumentOutOfRangeException(nameof(scenario), scenario, null)
+        };
+    }
 
     private ValueTask UpdateCache()
     {

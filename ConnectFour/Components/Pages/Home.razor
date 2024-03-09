@@ -8,7 +8,7 @@
     <PlayerLabel PlayerId="@_playerId"/>
     <PlayerScore/>
     <Board/>
-    <div signalr-subscribe="game-started"
+    <div signalr-subscribe="refresh-board"
          hx-get="/refresh-board"
          hx-trigger="htmx:signalr:message"
          hx-swap="outerHTML"
@@ -56,7 +56,7 @@
     let closeButton = document.querySelector("dialog button");
     closeButton.addEventListener("click", () => {
       dialog.close();
-    });    
+    });
 </script>
 
 @code

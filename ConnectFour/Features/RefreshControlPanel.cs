@@ -1,4 +1,5 @@
 using ConnectFour.Components.Shared.Game;
+using ConnectFour.Hubs;
 using ConnectFour.Models;
 using ConnectFour.Persistence;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -17,13 +18,14 @@ public class RefreshControlPanelEndpoint : IEndpoint
             .DisableAntiforgery();
 }
 
-internal class RefreshControlPanelHandler(PlayersContext ctx) : IHttpQueryHandler<RefreshControlPanel>
+internal class RefreshControlPanelHandler(PlayersContext ctx, GameHub gameHub) : IHttpQueryHandler<RefreshControlPanel>
 {
     public async Task<IResult> HandleAsync(RefreshControlPanel query, CancellationToken cancellationToken = default)
     {
         var player = ctx[query.PlayerId];
+        
+        if (gameHub.CheckIfInTheQueue(player.Id)) return new RazorComponentResult(typeof(Indicator));
 
-        //TODO: Check if in queue
         return player.CurrentGame is not null
             ? new RazorComponentResult(typeof(InGameButtons))
             : new RazorComponentResult(typeof(NewGameButtons));
