@@ -31,13 +31,6 @@
         <div signalr-subscribe="game-completed" class="p-1 mb-2 pt-0"></div>
         <button autofocus class="p-1 mb-1 w-[40%] nm-hole rounded">OK</button>
     </dialog>
-
-    <div id="game-url"
-         signalr-subscribe="update-url"
-         hx-get="/game-url/game-id"
-         hx-swap="none"
-         hx-trigger="game-url-changed">
-    </div>
 </div>
 
 <Lobby/>
@@ -55,27 +48,15 @@
    
     let lobbyConnectionDiv = document.getElementById("lobby-connection");
     lobbyConnectionDiv.setAttribute("signalr-connect", `/lobby-hub?playerId=${playerId}`);
+    let gameConnectionDiv = document.getElementById("game");
+    gameConnectionDiv.setAttribute("signalr-connect", `/game-hub?playerId=${playerId}`);
 
     let dialog = document.querySelector("#notification_dialog");
     
     let closeButton = document.querySelector("dialog button");
     closeButton.addEventListener("click", () => {
       dialog.close();
-    });
-    
-    document.addEventListener('htmx:signalr:message', function(evt) {
-        if (evt.detail.method === 'update-url') {
-            
-            //TODO: Hack until signalR supports headers 
-            let gameId = evt.detail.message.gameId;
-            sessionStorage.setItem("GameId", gameId);
-            let gameUrlDiv = document.getElementById("game-url");
-            gameUrlDiv.setAttribute("hx-get", `/game-url/${gameId}`);
-            htmx.process(gameUrlDiv);
-            htmx.trigger(gameUrlDiv, "game-url-changed");
-        }
-    });
-    
+    });    
 </script>
 
 @code

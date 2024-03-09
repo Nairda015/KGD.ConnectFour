@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using ConnectFour.Domain;
 using ConnectFour.Models;
 
 namespace ConnectFour.Persistence;
@@ -42,7 +43,14 @@ public class PlayersContext(Channel<LobbyUpdateToken> lobbyChannel) : Dictionary
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask GameStarted(PlayerId playerId, GameId gameId)
+    public async ValueTask GameStarted(GameLog log)
+    {
+        var gameId = log.GameId;
+        await GameStarted(log.FirstPlayerConnection.PlayerId, gameId);
+        await GameStarted(log.SecondPlayerConnection.PlayerId, gameId);
+    }
+    
+    private ValueTask GameStarted(PlayerId playerId, GameId gameId)
     {
         var player = this[playerId];
         player.CurrentGame = gameId;

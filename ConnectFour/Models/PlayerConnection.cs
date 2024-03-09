@@ -3,6 +3,7 @@ namespace ConnectFour.Models;
 public record PlayerConnection(PlayerId PlayerId, ConnectionId Connection)
 {
     public DateTime ConnectionTime { get; init; } = DateTime.Now;
+    public GameId GameId { get; init; } = GameId.Create();
     public virtual bool Equals(PlayerConnection? other)
     {
         return PlayerId.Equals(other?.PlayerId) && Connection.Equals(other.Connection);

@@ -1,8 +1,10 @@
 <div class="flex w-full px-4 py-2 columns-1 max-w-md mx-auto"
      signalr-subscribe="show-indicator">
     <div class="text-2xl py-2 w-full nm-hole rounded text-center"
-         signalr-send="newGame"
+         hx-post="/new-game"
          hx-vals="js:{playerId: sessionStorage.getItem('PlayerId')}">
         New Game
     </div>
 </div>
+
+@* Post request should also include loader? *@

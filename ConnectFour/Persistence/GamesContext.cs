@@ -17,5 +17,5 @@ public class GamesContext
 
     public GameLog GetState(GameId gameId) => _gamesState[gameId];
     public void UpdateState(GameLog gameLog) => _gamesState[gameLog.GameId] = gameLog;
-    public bool NewGame(GameLog log) => _gamesState.TryAdd(log.GameId, log);
+    public bool StartGameRecording(GameLog log) => _gamesState.TryAdd(log.GameId, log);
 }

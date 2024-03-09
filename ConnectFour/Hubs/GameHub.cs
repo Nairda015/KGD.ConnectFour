@@ -12,69 +12,32 @@ namespace ConnectFour.Hubs;
 public record NewGameMessage(string PlayerId);
 
 //TODO: Remove from queue after connection lost 
-public class GameHub(IHubContext<GameHub> hubContext,
-    GamesContext context,
-    PlayersContext players,
-    BlazorRenderer renderer,
-    ILogger<GameHub> logger) : Hub
+public class GameHub(IHubContext<GameHub> hubContext, BlazorRenderer renderer) : Hub
 {
     private static readonly SortedSet<PlayerConnection> UsersSet = new(new PlayerConnectionComparer());
-
-    public async Task NewGame(NewGameMessage message)
+    private static readonly Dictionary<PlayerId, ConnectionId> ConnectedPlayers = new();
+    public static PlayerConnection GetPlayerConnection(PlayerId playerId) => new(playerId, ConnectedPlayers[playerId]);
+    public static PlayerConnection? FindOpponent()
     {
-        var connectionId = new ConnectionId(Context.ConnectionId);
-        var playerId = new PlayerId(message.PlayerId);
-        var playerConnection = new PlayerConnection(playerId, connectionId);
-        
-        logger.LogDebug("Player with id {PlayerId} requested new game", playerId);
-        logger.LogDebug("Game hub connection id for {PlayerId} is {ConnectionId}", playerId, connectionId);
-        
-        if (UsersSet.Count is 0)
-        {
-            UsersSet.Add(playerConnection);
-            await hubContext.Clients
-                .Client(connectionId)
-                .SendAsync("show-indicator", await renderer.RenderComponent<Indicator>());
-            return;
-        }
+        var user = UsersSet.Min;
+        if (user is null) return null;
 
-        //TODO: is this good idea? (multithreading)
-        var secondUser = UsersSet.Min;
-        if (secondUser is null) return;
-
-        UsersSet.Remove(secondUser);
-        
-        var log = new GameLog
-        {
-            GameId = GameId.Create(),
-            FirstPlayerConnection = playerConnection,
-            SecondPlayerConnection = secondUser,
-        };
-
-        await StartGame(log, CancellationToken.None);
+        UsersSet.Remove(user);
+        return user;
     }
 
-    private async Task StartGame(GameLog log, CancellationToken ct)
+    public async Task AddPlayerToQueue(PlayerConnection connection)
     {
-        var (gameId, firstPlayerId, secondPlayerId) = log;
-        context.NewGame(log);
-        await players.GameStarted(firstPlayerId, gameId);
-        await players.GameStarted(secondPlayerId, gameId);
+        UsersSet.Add(connection);
+        await hubContext.Clients
+            .Client(connection.Connection)
+            .SendAsync("show-indicator", await renderer.RenderComponent<Indicator>());
+    }
 
-        await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId.Value, ct);
-        await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId.Value, ct);
-        
-        await hubContext.Clients
-            .Group(log.GameId.Value)
-            .SendAsync("update-url", new { gameId = log.GameId.ToString() }, ct);
-        
-        await hubContext.Clients
-            .Group(log.GameId.Value)
-            .SendAsync("game-started", ct);
-        
-        await hubContext.Clients
-            .Group(log.GameId.Value)
-            .SendAsync("refresh-control-panel", ct);
+    public async Task AddPlayersToGroup(GameLog log, CancellationToken ct)
+    {
+        await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId, ct);
+        await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId, ct);
     }
 
     public async Task SendCompletedGameMessage(GameId gameId, PlayerId winnerId)
@@ -107,6 +70,17 @@ public class GameHub(IHubContext<GameHub> hubContext,
             .SendAsync("current-player", log.GetCurrentPlayerId, ct);
     }
     
+    public async Task NotifyAboutGameStart(GameId gameId, CancellationToken ct)
+    {
+        await hubContext.Clients
+            .Group(gameId)
+            .SendAsync("game-started", ct);
+        
+        await hubContext.Clients
+            .Group(gameId)
+            .SendAsync("refresh-control-panel", ct);
+    }
+    
     private async Task NotifyAboutGameEnd(GameId gameId, string message)
     {
         await hubContext.Clients
@@ -122,11 +96,21 @@ public class GameHub(IHubContext<GameHub> hubContext,
             .SendAsync("refresh-control-panel");
     }
     
+    public override async Task OnConnectedAsync()
+    {
+        var ctx = Context.GetHttpContext()!;
+        var queryString = ctx.Request.Query["playerId"].ToString();
+        var playerId = new PlayerId(queryString);
+        ConnectedPlayers.Add(playerId, new ConnectionId(Context.ConnectionId));
+        await base.OnConnectedAsync();
+    }
+    
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var user = UsersSet.FirstOrDefault(x => x.Connection == Context.ConnectionId);
         if (user is null) return;
         UsersSet.Remove(user);
+        ConnectedPlayers.Remove(user.PlayerId);
         await base.OnDisconnectedAsync(exception);
     }
 }

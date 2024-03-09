@@ -24,7 +24,7 @@
 - [x] (A) fix storage override on page refresh
 - [x] (B) fix signalR events (remove hacks)
 - [x] (A) replace trigger 'every 2s' with ws messages  
-- [ ] (A) move new game flow to rest requests
+- [x] (A) move new game flow to rest requests
 - [ ] (A) move from dictionaries to memory cache or db
 - [ ] (A) move mark move flow to signalR  
  
