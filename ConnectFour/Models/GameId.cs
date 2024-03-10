@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ConnectFour.Models;
@@ -33,4 +34,6 @@ public readonly record struct GameId(string Value) : IParsable<GameId>
         }
     }
     public static implicit operator string(GameId d) => d.Value;
+    public static implicit operator GameId(string d) => Parse(d, CultureInfo.InvariantCulture);
+
 }

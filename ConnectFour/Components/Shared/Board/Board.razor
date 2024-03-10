@@ -8,9 +8,9 @@
                     <div
                         id="cell-@i-@j"
                         class="aspect-square nm-hole rounded"
-                        hx-post="move"
+                        signalr-send="makeMove"
                         hx-swap="none"
-                        hx-vals='js:{playerId: sessionStorage.getItem("PlayerId"), gameId: getGameIdFromPath(), columnNumber: @j}'>
+                        hx-vals='js:{playerId: sessionStorage.getItem("PlayerId"), gameId: getGameIdFromPath(), columnNumber: "@j"}'>
                     </div>
                 </div>
             }

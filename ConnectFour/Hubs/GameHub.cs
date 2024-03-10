@@ -4,11 +4,16 @@ using ConnectFour.Components.Shared.Notifications;
 using ConnectFour.Domain;
 using ConnectFour.Extensions;
 using ConnectFour.Models;
+using ConnectFour.Persistence;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ConnectFour.Hubs;
 
-public class GameHub(IHubContext<GameHub> hubContext, BlazorRenderer renderer) : Hub
+public class GameHub(
+    IHubContext<GameHub> hubContext,
+    GamesContext gamesContext,
+    PlayersContext playersContext,
+    BlazorRenderer renderer) : Hub
 {
     private static readonly SortedSet<PlayerConnection> UsersQueue = new(new PlayerConnectionComparer());
     private static readonly Dictionary<PlayerId, ConnectionId> ConnectedPlayers = new();
@@ -39,6 +44,50 @@ public class GameHub(IHubContext<GameHub> hubContext, BlazorRenderer renderer) :
         await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId, ct);
         await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId, ct);
     }
+    
+    public async Task MakeMove(MakeMoveMessage message)
+    {
+        var (playerId, gameId, chosenColumn) = message.ToMarkMove();
+        var gameLog = gamesContext.GetState(new GameId(gameId));
+
+        if (gameLog.IsComplete) return;
+        if (gameLog.GetCurrentPlayerId != playerId) return;
+
+        var game = new Game(gameLog);
+        var move = game.MakeMove(chosenColumn);
+
+        if (move.MoveResult is MoveResult.ColumnFull) return;
+
+        gameLog.AddMove(chosenColumn);
+        if (move.MoveResult is MoveResult.Win) gameLog.Complete();
+
+        gamesContext.UpdateState(gameLog);
+
+        //TODO: mark after adding move is buggy 
+        //TODO: board is full scenario
+        await MarkMove(gameLog, move.Position!.Value);
+        
+        if (gameLog.IsComplete)
+        {
+            var looser = gameLog.FirstPlayerConnection.PlayerId == playerId
+                ? gameLog.SecondPlayerConnection.PlayerId
+                : gameLog.FirstPlayerConnection.PlayerId;
+            await playersContext.GameEnded(playerId, looser);
+            
+            await SendCompletedGameMessage(gameId, playerId);
+        }
+    }
+    
+    private async Task MarkMove(GameLog log, Position movePosition)
+    {
+        var colour = log.CurrentPlayerColor.ToString().ToLower();
+        var message = await renderer.RenderComponent<Disc>(
+            new Dictionary<string, object?> {{nameof(Disc.Colour), colour}});
+
+        await hubContext.Clients
+            .Group(log.GameId.Value)
+            .SendAsync($"mark-move-{movePosition.Row}-{movePosition.Column}", message);
+    }
 
     public async Task SendCompletedGameMessage(GameId gameId, PlayerId winnerId)
     {
@@ -53,21 +102,6 @@ public class GameHub(IHubContext<GameHub> hubContext, BlazorRenderer renderer) :
         var message = await renderer.RenderComponent<ResignationMessage>(
             new Dictionary<string, object?> {{nameof(ResignationMessage.PlayerId), winnerId}});
         await NotifyAboutGameEnd(gameId, message);
-    }
-    
-    public async Task MarkMove(GameLog log, Position movePosition, CancellationToken ct)
-    {
-        var colour = log.CurrentPlayerColor.ToString().ToLower();
-        var message = await renderer.RenderComponent<Disc>(
-            new Dictionary<string, object?> {{nameof(Disc.Colour), colour}});
-
-        await hubContext.Clients
-            .Group(log.GameId.Value)
-            .SendAsync($"mark-move-{movePosition.Row}-{movePosition.Column}", message, ct);
-        
-        await hubContext.Clients
-            .Group(log.GameId.Value)
-            .SendAsync("current-player", log.GetCurrentPlayerId, ct);
     }
     
     public async Task NotifyAboutGameStart(GameId gameId, CancellationToken ct)
@@ -125,4 +159,11 @@ class PlayerConnectionComparer : IComparer<PlayerConnection>
         if (x is null || y is null) throw new ArgumentNullException();
         return x.ConnectionTime.CompareTo(y.ConnectionTime);
     }
+}
+
+public record MakeMove(PlayerId PlayerId, GameId GameId, int ColumnNumber);
+
+public record MakeMoveMessage(string PlayerId, string GameId, string ColumnNumber)
+{
+    internal MakeMove ToMarkMove() => new(PlayerId, GameId, int.Parse(ColumnNumber));
 }

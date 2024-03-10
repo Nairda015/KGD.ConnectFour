@@ -26,7 +26,7 @@
 - [x] (A) replace trigger 'every 2s' with ws messages  
 - [x] (A) move new game flow to rest requests
 - [ ] (A) move from dictionaries to memory cache or db
-- [ ] (A) move mark move flow to signalR  
+- [x] (A) move mark move flow to signalR  
  
 ### signalr:
 - [x] (A) replace new game to resign button
@@ -70,9 +70,9 @@
 - 05.03 | 330 min
 - 08.03 | 30 min
 - 09.03 | 180 min
-- 10.03 | 30 min
+- 10.03 | 120 min
 
 ## SUM
-30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 + 70 + 160 + 330 + 30 + 180 + 30
-### 4140
+30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 + 70 + 160 + 330 + 30 + 180 + 120
+### 4230
 

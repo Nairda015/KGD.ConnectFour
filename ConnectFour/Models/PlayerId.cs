@@ -1,3 +1,4 @@
+using System.Globalization;
 using Bogus;
 
 namespace ConnectFour.Models;
@@ -28,4 +29,5 @@ public readonly record struct PlayerId(string Value) : IParsable<PlayerId>
         }
     }
     public static implicit operator string(PlayerId d) => d.Value;
+    public static implicit operator PlayerId(string d) => Parse(d, CultureInfo.InvariantCulture);
 }
