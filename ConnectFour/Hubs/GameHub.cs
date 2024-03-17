@@ -6,6 +6,7 @@ using ConnectFour.Extensions;
 using ConnectFour.Models;
 using ConnectFour.Persistence;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ConnectFour.Hubs;
 
@@ -13,10 +14,19 @@ public class GameHub(
     IHubContext<GameHub> hubContext,
     GamesContext gamesContext,
     PlayersContext playersContext,
-    BlazorRenderer renderer) : Hub
+    BlazorRenderer renderer,
+    ILogger<GameHub> logger) : Hub
 {
     private static readonly SortedSet<PlayerConnection> UsersQueue = new(new PlayerConnectionComparer());
     private static readonly Dictionary<PlayerId, ConnectionId> ConnectedPlayers = new();
+
+    private static readonly MemoryCache RecentlyDisconnected = new(new MemoryCacheOptions
+    {
+        ExpirationScanFrequency = TimeSpan.FromMinutes(1),
+    });
+
+    private static readonly MemoryCacheEntryOptions CacheEntryOptions = new MemoryCacheEntryOptions()
+        .SetSlidingExpiration(TimeSpan.FromSeconds(30));
 
     public static PlayerConnection GetPlayerConnection(PlayerId playerId) => new(playerId, ConnectedPlayers[playerId]);
     public static PlayerConnection? FindOpponent()
@@ -43,6 +53,22 @@ public class GameHub(
     {
         await hubContext.Groups.AddToGroupAsync(log.FirstPlayerConnection.Connection, log.GameId, ct);
         await hubContext.Groups.AddToGroupAsync(log.SecondPlayerConnection.Connection, log.GameId, ct);
+    }
+
+    public async Task AddSpectator(GameId gameId, PlayerId playerId, CancellationToken ct)
+    {
+        do
+        {
+            await Task.Delay(500, ct);
+        } while (RecentlyDisconnected.TryGetValue(playerId, out _));
+
+        var playerConnection = ConnectedPlayers[playerId];
+        await hubContext.Groups.AddToGroupAsync(playerConnection, gameId, ct);
+        logger.LogDebug(
+            "Player with id {PlayerId} and connection id {ConnectionId} subscribe to game {GroupId}",
+            playerId,
+            playerConnection,
+            gameId);
     }
     
     public async Task MakeMove(MakeMoveMessage message)
@@ -82,9 +108,8 @@ public class GameHub(
     
     private async Task MarkMove(GameLog log, Position movePosition)
     {
-        var colour = log.CurrentPlayerColor.ToString().ToLower();
         var message = await renderer.RenderComponent<Disc>(
-            new Dictionary<string, object?> {{nameof(Disc.Colour), colour}});
+            new Dictionary<string, object?> {{nameof(Disc.Colour), log.PreviousPlayerColor}});
 
         await hubContext.Clients
             .Group(log.GameId.Value)
@@ -136,20 +161,28 @@ public class GameHub(
     {
         var ctx = Context.GetHttpContext()!;
         var playerId = ctx.User.GetPlayerId();
-        var added = ConnectedPlayers.TryAdd(playerId, new ConnectionId(Context.ConnectionId));
-        if (!added) ConnectedPlayers[playerId] = new ConnectionId(Context.ConnectionId);
+        ConnectedPlayers[playerId] = new ConnectionId(Context.ConnectionId);
+        RecentlyDisconnected.Remove(playerId);
         await base.OnConnectedAsync();
+        logger.LogDebug("Player with id {PlayerId} connected", playerId);
+        logger.LogDebug("Player with id {PlayerId} game hub connection id {ConnectionId}", playerId, Context.ConnectionId);
     }
     
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var user = UsersQueue.FirstOrDefault(x => x.Connection == Context.ConnectionId);
-        if (user is not null)
-        {
-            UsersQueue.Remove(user);
-            ConnectedPlayers.Remove(user.PlayerId);
-        }
+        if (user is not null) UsersQueue.Remove(user);
+        
+        var ctx = Context.GetHttpContext()!;
+        var playerId = ctx.User.GetPlayerId();
+        
+        var oldConnectionId = ConnectedPlayers[playerId];
+
+        RecentlyDisconnected.Set(playerId, oldConnectionId, CacheEntryOptions);
+        ConnectedPlayers.Remove(playerId);
+        
         await base.OnDisconnectedAsync(exception);
+        logger.LogDebug("Player with id {PlayerId} disconnected", playerId);
     }
 }
 

@@ -16,10 +16,17 @@ public class GamesContext
     }
 
     public GameLog GetState(GameId gameId) => _gamesState[gameId];
+    public GameLog? MaybeGetState(GameId gameId)
+    {
+        _ = _gamesState.TryGetValue(gameId, out var log); 
+        return log;
+    }
+    
+    public bool Exist(GameId gameId) => _gamesState.ContainsKey(gameId);
+
     public void UpdateState(GameLog gameLog) => _gamesState[gameLog.GameId] = gameLog;
     public bool StartGameRecording(GameLog log) => _gamesState.TryAdd(log.GameId, log);
 
-    public GameLog? GetPlayerGame(PlayerId playerId) => _gamesState.FirstOrDefault(x =>
-        x.Value.FirstPlayerConnection.PlayerId == playerId ||
-        x.Value.SecondPlayerConnection.PlayerId == playerId).Value;
+    public GameLog? GetPlayerGame(PlayerId playerId) =>
+        _gamesState.FirstOrDefault(x => x.Value.IsPlayerInTheGame(playerId)).Value;
 }

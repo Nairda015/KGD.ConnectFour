@@ -1,15 +1,19 @@
+@using ConnectFour.Domain
 <div class="flex aspect-square nm-hole rounded">
-    @if (Colour == "red")
+    @if (Colour is PlayerColor.Red)
     {
         <div class="before:bg-red-500 after:bg-red-500 m-auto w-[90%] h-[90%] cross before:rounded after:rounded"></div>
     }
-    else
+    else if (Colour is PlayerColor.Yellow)
     {
         <div class="w-[70%] h-[70%] bg-yellow-500 nm-flat m-auto rounded-full"></div>
+    }
+    else
+    {
+        <div class="aspect-square nm-hole rounded"></div>
     }
 </div>
 
 @code {
-    [Parameter]
-    public required string Colour { get; set; }
+    [Parameter] public required PlayerColor Colour { get; set; }
 }

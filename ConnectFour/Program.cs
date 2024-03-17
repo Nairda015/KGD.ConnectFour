@@ -82,22 +82,19 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.MapEndpoints<Program>();
 
-app.MapGet("game/{gameId}", (HttpContext ctx, GamesContext db, GameId gameId) =>
+app.MapGet("refresh-board", () => new RazorComponentResult(typeof(NewBoard)));
+app.MapGet("subscribe/{gameId}", async (
+    GameHub gameHub,
+    GameId gameId,
+    ClaimsPrincipal user,
+    GamesContext gamesContext,
+    CancellationToken ct) =>
 {
-    //TODO: create separate endpoint for game search
-    if (db.TryGetGameState(gameId, out var log) && !log!.IsComplete)
-    {
-        //replace target and refresh board 
-        //if game is on going subscribe to group (how to handle dropped subscription?)
-        return Results.Ok();
-    }
-
-    //ctx.Response.Headers.Add("HX-Push-Url", "/");
-    return Results.Redirect("/");
+    if (!gamesContext.Exist(gameId)) return Results.Redirect("/");
+    var playerId = user.GetPlayerId();
+    await gameHub.AddSpectator(gameId, playerId, ct);
+    return Results.Ok();
 });
-
-app.MapGet("refresh-board", () => new RazorComponentResult(typeof(Board)));
-
 
 app.UseSwagger();
 app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Connect Four"); });

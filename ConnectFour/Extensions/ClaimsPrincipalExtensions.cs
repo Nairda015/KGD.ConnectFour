@@ -6,7 +6,7 @@ namespace ConnectFour.Extensions;
 
 public static class ClaimsPrincipalExtensions
 {
-    public static PlayerId GetPlayerId(this ClaimsPrincipal principal)
+    public static PlayerId GetPlayerId(this ClaimsPrincipal? principal)
     {
         if (!principal.HasClaim(x => x.Type == "id")) throw new UnreachableException();
 

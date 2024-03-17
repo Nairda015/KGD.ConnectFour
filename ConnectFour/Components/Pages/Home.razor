@@ -9,7 +9,7 @@
 <div id="game" signalr-connect="/game-hub">
     <PlayerLabel PlayerId="@PlayerId"/>
     <PlayerScore/>
-    <Board/>
+    <NewBoard/>
     <div signalr-subscribe="refresh-board"
          hx-get="/refresh-board"
          hx-trigger="htmx:signalr:message"

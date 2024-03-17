@@ -11,8 +11,8 @@ public class LobbyHub(PlayersContext players, ILogger<LobbyHub> logger) : Hub
     {
         var ctx = Context.GetHttpContext()!;
         var playerId = ctx.User.GetPlayerId();
-        logger.LogDebug("Player with Id {PlayerId} connected", playerId);
-        logger.LogDebug("Player with Id {PlayerId} lobby connection id {ConnectionId}", playerId, Context.ConnectionId);
+        // logger.LogDebug("Player with id {PlayerId} connected", playerId);
+        // logger.LogDebug("Player with id {PlayerId} lobby connection id {ConnectionId}", playerId, Context.ConnectionId);
         await players.PlayerConnected(playerId);
         await base.OnConnectedAsync();
     }
@@ -21,7 +21,7 @@ public class LobbyHub(PlayersContext players, ILogger<LobbyHub> logger) : Hub
     {
         var ctx = Context.GetHttpContext()!;
         var playerId = ctx.User.GetPlayerId();
-        logger.LogDebug("Player with Id {PlayerId} disconnected", playerId);
+        //logger.LogDebug("Player with id {PlayerId} disconnected", playerId);
         await players.PlayerDisconnected(playerId);
         await base.OnDisconnectedAsync(exception);
     }

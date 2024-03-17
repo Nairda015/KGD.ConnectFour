@@ -1,0 +1,46 @@
+@page "/spectator-game/{gameId}"
+@using ConnectFour.Components.Shared.Board
+@using ConnectFour.Components.Shared.Lobby
+@using ConnectFour.Components.Shared.Game
+@using ConnectFour.Domain
+@using ConnectFour.Models
+@using System.Security.Claims
+@using ConnectFour.Extensions
+@using ConnectFour.Hubs
+@using ConnectFour.Persistence
+
+<div id="game" signalr-connect="/game-hub">
+    <PlayerLabel PlayerId="@PlayerId"/>
+    <PlayerScore/>
+    <StaticBoard Board="@Board"/>
+    
+    <div id="control-panel">
+        <div id="control-panel-buttons" hx-disabled-elt="this">
+            <NewGameButtons/>
+        </div>
+    </div>
+    
+    <div hx-get="subscribe/@GameId" hx-trigger="load"></div>
+</div>
+
+<Lobby/>
+
+@code
+{
+    [Parameter] public string GameId { get; set; } = default!;
+
+    [Inject] ClaimsPrincipal User { get; set; } = default!;
+    [Inject] GameHub GameHub { get; set; } = default!;
+    [Inject] GamesContext GamesContext { get; set; } = default!;
+    
+    private PlayerId PlayerId => User.GetPlayerId();
+    private Game.Board? Board { get; set; }
+
+    protected override void OnInitialized()
+    {
+        var gameLog = GamesContext.MaybeGetState(GameId);
+        if (gameLog is null) return;
+
+        Board = Game.Board.LoadBoardFromLog(gameLog);
+    }
+}
