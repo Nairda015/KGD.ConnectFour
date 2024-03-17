@@ -15,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthentication()
+    .AddCookie("xd", x => { x.Cookie.Name = "user_id"; });
 
 //channels
 builder.Services.AddSingleton(Channel.CreateUnbounded<LobbyUpdateToken>());
@@ -53,6 +55,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+
 app.UseStaticFiles();
 
 app.MapHub<GameHub>("/game-hub");
@@ -60,6 +64,17 @@ app.MapHub<WsHubTest>("/ws-hub");
 app.MapHub<LobbyHub>("/lobby-hub");
 
 app.UseAntiforgery();
+
+app.Use(async (context, next) =>
+{
+    if (!context.User.Identity!.IsAuthenticated && context.Request.Path.Value != "/login")
+    {
+        context.Response.Redirect("/login");
+        return;
+    }
+
+    await next(context);
+});
 
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 

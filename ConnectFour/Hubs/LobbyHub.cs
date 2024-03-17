@@ -1,5 +1,5 @@
 using System.Threading.Channels;
-using ConnectFour.Models;
+using ConnectFour.Extensions;
 using ConnectFour.Persistence;
 using Microsoft.AspNetCore.SignalR;
 
@@ -10,8 +10,7 @@ public class LobbyHub(PlayersContext players, ILogger<LobbyHub> logger) : Hub
     public override async Task OnConnectedAsync()
     {
         var ctx = Context.GetHttpContext()!;
-        var queryString = ctx.Request.Query["playerId"].ToString();
-        var playerId = new PlayerId(queryString);
+        var playerId = ctx.User.GetPlayerId();
         logger.LogDebug("Player with Id {PlayerId} connected", playerId);
         logger.LogDebug("Player with Id {PlayerId} lobby connection id {ConnectionId}", playerId, Context.ConnectionId);
         await players.PlayerConnected(playerId);
@@ -21,8 +20,7 @@ public class LobbyHub(PlayersContext players, ILogger<LobbyHub> logger) : Hub
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var ctx = Context.GetHttpContext()!;
-        var queryString = ctx.Request.Query["playerId"].ToString();
-        var playerId = new PlayerId(queryString);
+        var playerId = ctx.User.GetPlayerId();
         logger.LogDebug("Player with Id {PlayerId} disconnected", playerId);
         await players.PlayerDisconnected(playerId);
         await base.OnDisconnectedAsync(exception);

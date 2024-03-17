@@ -1,13 +1,13 @@
+using System.Security.Claims;
 using ConnectFour.Domain;
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
-using ConnectFour.Models;
 using ConnectFour.Persistence;
 using MiWrap;
 
 namespace ConnectFour.Features;
 
-internal record NewGame(PlayerId PlayerId) : IHttpCommand;
+internal record NewGame : IHttpCommand;
 
 public class NewGameEndpoint : IEndpoint
 {
@@ -22,11 +22,13 @@ internal class NewGameHandler(
     IHttpContextAccessor httpContextAccessor,
     GameHub hub,
     GamesContext gamesContext,
-    PlayersContext playersContext) : IHttpCommandHandler<NewGame>
+    PlayersContext playersContext,
+    ClaimsPrincipal user) : IHttpCommandHandler<NewGame>
 {
     public async Task<IResult> HandleAsync(NewGame command, CancellationToken cancellationToken = default)
     {
-        var firstPlayerConnection = GameHub.GetPlayerConnection(command.PlayerId);
+        var playerId = user.GetPlayerId();
+        var firstPlayerConnection = GameHub.GetPlayerConnection(playerId);
         var secondPlayerConnection = GameHub.FindOpponent();
         
         if (secondPlayerConnection is null)

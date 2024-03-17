@@ -5,6 +5,7 @@
 - [x] (A) resign
 - [x] (A) waiting indicator
 - [ ] (C) take back flow
+- [x] (A) add player id to header on all requests (maybe auth/cookies?)
 - [x] (A) click website name to refresh to main page - refactor needed 
 - [ ] (A) handler game search
 - [ ] (A) handle game spectators
@@ -47,6 +48,8 @@
 
 ### bugs:
 - [ ] (B) sometimes it will throw that player don't exist
+- [ ] (B) you can click make move outside of the game and exception is thrown  
+- [ ] (A) why do I need anti-forgery token? 
 - [ ] (A) refresh while game is still on going returns empty page (handle game search and replace dropped connections in group)
 
 

@@ -3,9 +3,11 @@
 @using ConnectFour.Components.Shared.Lobby
 @using ConnectFour.Components.Shared.Game
 @using ConnectFour.Models
+@using System.Security.Claims
+@using ConnectFour.Extensions
 
 <div id="game" signalr-connect="/game-hub">
-    <PlayerLabel PlayerId="@_playerId"/>
+    <PlayerLabel PlayerId="@PlayerId"/>
     <PlayerScore/>
     <Board/>
     <div signalr-subscribe="refresh-board"
@@ -37,20 +39,15 @@
 
 <script>
     let playerId = sessionStorage.getItem("PlayerId");
-    console.log(playerId)
+    
     if (playerId == null) {
-        sessionStorage.setItem("PlayerId", "@_playerId.ToString()");
-        playerId = "@_playerId.ToString()";
+        sessionStorage.setItem("PlayerId", "@PlayerId.ToString()");
+        playerId = "@PlayerId.ToString()";
     }
     
     let playerNameDiv = document.getElementById("playerIdValue");
     playerNameDiv.innerText = playerId;
-   
-    let lobbyConnectionDiv = document.getElementById("lobby-connection");
-    lobbyConnectionDiv.setAttribute("signalr-connect", `/lobby-hub?playerId=${playerId}`);
-    let gameConnectionDiv = document.getElementById("game");
-    gameConnectionDiv.setAttribute("signalr-connect", `/game-hub?playerId=${playerId}`);
-
+    
     let dialog = document.querySelector("#notification_dialog");
     
     let closeButton = document.querySelector("dialog button");
@@ -61,5 +58,6 @@
 
 @code
 {
-    private readonly PlayerId _playerId = PlayerId.Create();
+    [Inject] ClaimsPrincipal? User { get; set; }
+    private PlayerId PlayerId => User!.GetPlayerId();
 }

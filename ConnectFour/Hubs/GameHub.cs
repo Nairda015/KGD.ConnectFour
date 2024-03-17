@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ConnectFour.Components.Shared.Board;
 using ConnectFour.Components.Shared.Game;
 using ConnectFour.Components.Shared.Notifications;
@@ -133,8 +134,7 @@ public class GameHub(
     public override async Task OnConnectedAsync()
     {
         var ctx = Context.GetHttpContext()!;
-        var queryString = ctx.Request.Query["playerId"].ToString();
-        var playerId = new PlayerId(queryString);
+        var playerId = ctx.User.GetPlayerId();
         var added = ConnectedPlayers.TryAdd(playerId, new ConnectionId(Context.ConnectionId));
         if (!added) ConnectedPlayers[playerId] = new ConnectionId(Context.ConnectionId);
         await base.OnConnectedAsync();
