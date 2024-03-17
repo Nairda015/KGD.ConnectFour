@@ -7,12 +7,9 @@
 - [ ] (C) take back flow
 - [x] (A) add player id to header on all requests (maybe auth/cookies?)
 - [x] (A) click website name to refresh to main page - refactor needed 
-- [ ] (A) handler game search
-- [ ] (A) handle game spectators
-- [ ] (C) add interaction to lobby game ids
-- [ ] (?) custom name for players (dialog?)
-- [ ] (?) change name
-- [ ] (?) passwords
+- [x] (A) handler game search
+- [x] (A) handle game spectators
+- [ ] (A) add interaction to lobby game ids (NOW)
 - [x] (A) new game button after game ended
 - [ ] (B) exception middleware 
 - [ ] (A) do not refresh board if game is not completed or auto resign?
@@ -76,8 +73,9 @@
 - 08.03 | 30 min
 - 09.03 | 180 min
 - 10.03 | 120 min
+- 18.03 | 360 min  
 
 ## SUM
-30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 + 70 + 160 + 330 + 30 + 180 + 120
-### 4230
+30 + 420 + 380 + 440 + 380 + 300 + 180 + 60 + 130 + 240 + 100 + 120 + 80 + 60 + 300 + 120 + 70 + 160 + 330 + 30 + 180 + 120 + 360
+### 4590
 
