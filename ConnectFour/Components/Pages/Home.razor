@@ -21,7 +21,6 @@
         <div signalr-subscribe="refresh-control-panel"
              hx-trigger="htmx:signalr:message"
              hx-get="/refresh-control-panel"
-             hx-vals="js:{playerId: sessionStorage.getItem('PlayerId')}"
              hx-target="#control-panel-buttons">
         </div>
         <div id="control-panel-buttons" hx-disabled-elt="this">
@@ -37,17 +36,7 @@
 
 <Lobby/>
 
-<script>
-    let playerId = sessionStorage.getItem("PlayerId");
-    
-    if (playerId == null) {
-        sessionStorage.setItem("PlayerId", "@PlayerId.ToString()");
-        playerId = "@PlayerId.ToString()";
-    }
-    
-    let playerNameDiv = document.getElementById("playerIdValue");
-    playerNameDiv.innerText = playerId;
-    
+<script>    
     let dialog = document.querySelector("#notification_dialog");
     
     let closeButton = document.querySelector("dialog button");

@@ -1,12 +1,12 @@
+using System.Security.Claims;
 using ConnectFour.Extensions;
 using ConnectFour.Hubs;
-using ConnectFour.Models;
 using ConnectFour.Persistence;
 using MiWrap;
 
 namespace ConnectFour.Features;
 
-internal record Resign(PlayerId PlayerId, GameId GameId) : IHttpCommand;
+internal record Resign : IHttpCommand;
 
 public class ResignEndpoint : IEndpoint
 {
@@ -17,12 +17,13 @@ public class ResignEndpoint : IEndpoint
             .DisableAntiforgery();
 }
 
-internal class ResignHandler(GamesContext gamesContext, GameHub hub, PlayersContext players) : IHttpCommandHandler<Resign>
+internal class ResignHandler(GamesContext gamesContext, GameHub hub, PlayersContext players, ClaimsPrincipal user) : IHttpCommandHandler<Resign>
 {
-    public async Task<IResult> HandleAsync(Resign command, CancellationToken cancellationToken = default)
+    public async Task<IResult> HandleAsync(Resign _, CancellationToken cancellationToken = default)
     {
-        var (playerId, gameId) = command;
-        var gameLog = gamesContext.GetState(gameId);
+        var playerId = user.GetPlayerId();
+        var gameLog = gamesContext.GetPlayerGame(playerId);
+        if (gameLog is null) return Results.BadRequest("You are not active player of any game");
 
         if (gameLog.IsComplete) return Results.BadRequest("Game is already completed");
         if (gameLog.FirstPlayerConnection.PlayerId != playerId && gameLog.SecondPlayerConnection.PlayerId != playerId)
@@ -37,7 +38,7 @@ internal class ResignHandler(GamesContext gamesContext, GameHub hub, PlayersCont
         
         await players.GameEnded(winner, playerId);
         
-        await hub.SendResignationMessage(gameId, winner);
+        await hub.SendResignationMessage(gameLog.GameId, winner);
 
         return Results.Accepted();
     }

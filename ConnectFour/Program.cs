@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Threading.Channels;
 using ConnectFour.Components;
 using ConnectFour.Components.Shared.Board;
@@ -15,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ClaimsPrincipal>(s => s.GetService<IHttpContextAccessor>()!.HttpContext!.User);
 builder.Services.AddAuthentication()
     .AddCookie("xd", x => { x.Cookie.Name = "user_id"; });
 

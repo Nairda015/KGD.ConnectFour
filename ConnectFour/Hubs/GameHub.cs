@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using ConnectFour.Components.Shared.Board;
 using ConnectFour.Components.Shared.Game;
 using ConnectFour.Components.Shared.Notifications;
@@ -48,7 +47,9 @@ public class GameHub(
     
     public async Task MakeMove(MakeMoveMessage message)
     {
-        var (playerId, gameId, chosenColumn) = message.ToMarkMove();
+        var context = Context.GetHttpContext();
+        var playerId = context!.User.GetPlayerId();
+        var (gameId, chosenColumn) = message.ToMarkMove();
         var gameLog = gamesContext.GetState(new GameId(gameId));
 
         if (gameLog.IsComplete) return;
@@ -161,9 +162,9 @@ class PlayerConnectionComparer : IComparer<PlayerConnection>
     }
 }
 
-public record MakeMove(PlayerId PlayerId, GameId GameId, int ColumnNumber);
+public record MakeMove(GameId GameId, int ColumnNumber);
 
-public record MakeMoveMessage(string PlayerId, string GameId, string ColumnNumber)
+public record MakeMoveMessage(string GameId, string ColumnNumber)
 {
-    internal MakeMove ToMarkMove() => new(PlayerId, GameId, int.Parse(ColumnNumber));
+    internal MakeMove ToMarkMove() => new(GameId, int.Parse(ColumnNumber));
 }

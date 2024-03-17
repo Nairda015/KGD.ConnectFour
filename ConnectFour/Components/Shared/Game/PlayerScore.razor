@@ -3,7 +3,6 @@
          class="text-2xl nm-hole rounded py-2"
          signalr-subscribe="player-score-updated"
          hx-post="/score"
-         hx-vals="js:{playerId: sessionStorage.getItem('PlayerId')}"
          hx-trigger="load, htmx:signalr:message">
         0 / 0 / 0
     </div>

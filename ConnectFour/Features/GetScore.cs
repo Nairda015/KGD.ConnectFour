@@ -1,11 +1,11 @@
+using System.Security.Claims;
 using ConnectFour.Extensions;
-using ConnectFour.Models;
 using ConnectFour.Persistence;
 using MiWrap;
 
 namespace ConnectFour.Features;
 
-internal record GetScore(PlayerId PlayerId) : IHttpCommand;
+internal record GetScore: IHttpCommand;
 public class GetScoreEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder builder) =>
@@ -15,8 +15,8 @@ public class GetScoreEndpoint : IEndpoint
             .DisableAntiforgery();
 }
 
-internal class GetScoreHandler(PlayersContext ctx) : IHttpCommandHandler<GetScore>
+internal class GetScoreHandler(PlayersContext ctx, ClaimsPrincipal user) : IHttpCommandHandler<GetScore>
 {
-    public async Task<IResult> HandleAsync(GetScore command, CancellationToken cancellationToken = default)
-        => Results.Extensions.Html(ctx.GetPlayerScore(command.PlayerId).ToString());
+    public async Task<IResult> HandleAsync(GetScore _, CancellationToken cancellationToken = default)
+        => Results.Extensions.Html(ctx.GetPlayerScore(user.GetPlayerId()).ToString());
 }

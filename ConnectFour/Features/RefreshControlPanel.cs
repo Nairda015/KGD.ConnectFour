@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using ConnectFour.Components.Shared.Game;
+using ConnectFour.Extensions;
 using ConnectFour.Hubs;
 using ConnectFour.Models;
 using ConnectFour.Persistence;
@@ -7,7 +9,7 @@ using MiWrap;
 
 namespace ConnectFour.Features;
 
-internal record RefreshControlPanel(PlayerId PlayerId) : IHttpQuery;
+internal record RefreshControlPanel : IHttpQuery;
 
 public class RefreshControlPanelEndpoint : IEndpoint
 {
@@ -18,11 +20,11 @@ public class RefreshControlPanelEndpoint : IEndpoint
             .DisableAntiforgery();
 }
 
-internal class RefreshControlPanelHandler(PlayersContext ctx, GameHub gameHub) : IHttpQueryHandler<RefreshControlPanel>
+internal class RefreshControlPanelHandler(PlayersContext ctx, GameHub gameHub, ClaimsPrincipal user) : IHttpQueryHandler<RefreshControlPanel>
 {
-    public async Task<IResult> HandleAsync(RefreshControlPanel query, CancellationToken cancellationToken = default)
+    public async Task<IResult> HandleAsync(RefreshControlPanel _, CancellationToken cancellationToken = default)
     {
-        var player = ctx[query.PlayerId];
+        var player = ctx[user.GetPlayerId()];
         
         if (gameHub.CheckIfInTheQueue(player.Id)) return new RazorComponentResult(typeof(Indicator));
 
