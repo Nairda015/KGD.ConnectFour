@@ -1,5 +1,7 @@
 [![wakatime](https://wakatime.com/badge/user/9f5e6603-f83c-481f-833b-fe7bf79e0c30/project/018b68c1-e566-4e5c-bee2-82f802d59d27.svg)](https://wakatime.com/badge/user/9f5e6603-f83c-481f-833b-fe7bf79e0c30/project/018b68c1-e566-4e5c-bee2-82f802d59d27)
 
+https://github.com/user-attachments/assets/d70cf224-72fc-46d1-a666-33b8b846208f
+
 # TODO:
 ### features:
 - [x] (A) resign
